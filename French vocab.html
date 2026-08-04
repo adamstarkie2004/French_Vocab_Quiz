@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>French Vocabulary Quiz</title>
+<style>
+  :root {
+    --bg: #f4f7fb;
+    --card: #ffffff;
+    --text: #1f2937;
+    --muted: #64748b;
+    --accent: #2563eb;
+    --accent-dark: #1d4ed8;
+    --correct: #15803d;
+    --incorrect: #b91c1c;
+    --border: #dbe3ee;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 24px;
+  }
+  .container { max-width: 800px; margin: 0 auto; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, .07);
+  }
+  h1 { margin: 0 0 8px; font-size: 2rem; }
+  h2 { margin: 0 0 12px; font-size: 1.4rem; }
+  .subtitle { color: var(--muted); margin: 0 0 24px; }
+  .progress-wrap {
+    height: 10px; background: #e8eef6; border-radius: 99px;
+    overflow: hidden; margin-bottom: 24px;
+  }
+  .progress {
+    height: 100%; width: 5%; background: var(--accent);
+    transition: width .25s ease;
+  }
+  .meta {
+    display: flex; justify-content: space-between; gap: 12px;
+    color: var(--muted); font-size: .95rem; margin-bottom: 18px;
+  }
+  .question-row {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+  }
+  .question { font-size: 1.35rem; font-weight: 700; flex: 1; }
+  .audio-btn {
+    background: none; border: 2px solid var(--border); border-radius: 50%;
+    width: 42px; height: 42px; cursor: pointer; font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+    transition: .15s ease; flex-shrink: 0;
+  }
+  .audio-btn:hover { border-color: var(--accent); background: #f0f5ff; }
+  .audio-btn.speaking { border-color: var(--accent); background: #dbeafe; }
+  .options { display: grid; gap: 12px; }
+  button.option {
+    width: 100%; text-align: left; padding: 15px 17px;
+    background: #fff; border: 2px solid var(--border);
+    border-radius: 12px; cursor: pointer; font-size: 1rem;
+    transition: .15s ease; position: relative;
+  }
+  button.option:hover:not(:disabled) {
+    border-color: var(--accent); background: #f8fbff;
+  }
+  button.option:disabled { cursor: default; }
+  button.option.correct { border-color: var(--correct); background: #f0fdf4; }
+  button.option.incorrect { border-color: var(--incorrect); background: #fef2f2; }
+  .option-translation {
+    display: block; font-size: .85rem; color: var(--muted);
+    margin-top: 6px; font-style: italic;
+  }
+  .feedback {
+    min-height: 28px; margin: 18px 0 8px; font-weight: 650;
+  }
+  .feedback.correct { color: var(--correct); }
+  .feedback.incorrect { color: var(--incorrect); }
+  .explanation { color: var(--muted); font-size: .95rem; margin-bottom: 20px; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .primary, .secondary, .danger, .magic {
+    border: 0; border-radius: 10px; padding: 12px 18px;
+    font-size: 1rem; font-weight: 650; cursor: pointer;
+  }
+  .primary { background: var(--accent); color: white; }
+  .primary:hover { background: var(--accent-dark); }
+  .secondary { background: #e8eef6; color: var(--text); }
+  .secondary:hover { background: #dce4f0; }
+  .danger { background: #fee2e2; color: var(--incorrect); }
+  .danger:hover { background: #fecaca; }
+  .magic {
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    color: white; font-size: .85rem; padding: 8px 14px;
+  }
+  .magic:hover { opacity: .9; }
+  .hidden { display: none !important; }
+  .result { text-align: center; }
+  .score { font-size: 3.5rem; font-weight: 800; margin: 10px 0; color: var(--accent); }
+  .result p { color: var(--muted); }
+  .review { margin-top: 24px; text-align: left; }
+  .review-section { margin-bottom: 20px; }
+  .review-section h3 {
+    font-size: 1.1rem; margin: 0 0 10px; padding: 8px 12px;
+    border-radius: 8px;
+  }
+  .review-section.correct-section h3 { background: #f0fdf4; color: var(--correct); }
+  .review-section.incorrect-section h3 { background: #fef2f2; color: var(--incorrect); }
+  .review-item {
+    padding: 14px 0; border-top: 1px solid var(--border);
+  }
+  .review-item strong { display: block; margin-bottom: 5px; }
+  .review-answer { color: var(--muted); font-size: .95rem; }
+
+  .set-list { list-style: none; padding: 0; margin: 0 0 20px; }
+  .set-list li {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px;
+    margin-bottom: 10px; background: #fafbfd;
+  }
+  .set-list li .set-info { flex: 1; }
+  .set-list li .set-name { font-weight: 700; }
+  .set-list li .set-count { font-size: .85rem; color: var(--muted); }
+  .set-list li .set-actions { display: flex; gap: 8px; }
+  .set-list li .set-actions button {
+    padding: 6px 12px; font-size: .85rem; border-radius: 8px;
+    border: 1px solid var(--border); background: white; cursor: pointer;
+  }
+  .set-list li .set-actions button:hover { background: #f1f5f9; }
+  .set-list li .set-actions button.del:hover { background: #fee2e2; color: var(--incorrect); }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: .9rem; }
+  .form-group input, .form-group textarea {
+    width: 100%; padding: 10px 14px; border: 2px solid var(--border);
+    border-radius: 10px; font-size: 1rem; font-family: inherit;
+  }
+  .form-group input:focus, .form-group textarea:focus {
+    outline: none; border-color: var(--accent);
+  }
+  .form-group textarea { min-height: 80px; resize: vertical; }
+  .word-entry {
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px; margin-bottom: 12px; background: #fafbfd;
+    position: relative;
+  }
+  .word-entry .remove-word {
+    position: absolute; top: 8px; right: 8px;
+    background: none; border: none; font-size: 1.2rem;
+    cursor: pointer; color: var(--muted);
+  }
+  .word-entry .remove-word:hover { color: var(--incorrect); }
+  .word-entry .form-group { margin-bottom: 10px; }
+  .word-entry .form-group:last-child { margin-bottom: 0; }
+  .word-entry .auto-gen-row {
+    display: flex; align-items: center; gap: 10px;
+    margin: 12px 0; padding: 10px 12px;
+    background: #f5f3ff; border-radius: 10px; border: 1px dashed #c4b5fd;
+  }
+  .word-entry .auto-gen-row span {
+    font-size: .85rem; color: #6d28d9; flex: 1;
+  }
+
+  .nav-tabs {
+    display: flex; gap: 4px; margin-bottom: 24px;
+    border-bottom: 2px solid var(--border); padding-bottom: 0;
+  }
+  .nav-tab {
+    padding: 10px 18px; border: none; background: none;
+    font-size: 1rem; font-weight: 600; cursor: pointer;
+    color: var(--muted); border-bottom: 3px solid transparent;
+    margin-bottom: -2px; transition: .15s;
+  }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .nav-tab:hover { color: var(--text); }
+
+  @media (max-width: 600px) {
+    body { padding: 12px; }
+    .card { padding: 20px; }
+    h1 { font-size: 1.6rem; }
+    .question-row { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <!-- HOME / SET SELECTION -->
+    <section id="home">
+      <h1>French Vocabulary Quiz</h1>
+      <p class="subtitle">Test your intermediate French vocabulary</p>
+      <div class="nav-tabs">
+        <button class="nav-tab active" data-tab="play">Play</button>
+        <button class="nav-tab" data-tab="manage">Word Sets</button>
+      </div>
+
+      <div id="tab-play">
+        <h2>Choose a word set</h2>
+        <ul id="setSelectList" class="set-list"></ul>
+        <button id="startQuizBtn" class="primary hidden">Start Quiz (5 random questions)</button>
+      </div>
+
+      <div id="tab-manage" class="hidden">
+        <h2>Your Word Sets</h2>
+        <ul id="manageSetList" class="set-list"></ul>
+        <button id="createSetBtn" class="primary">+ Create New Word Set</button>
+      </div>
+    </section>
+
+    <!-- WORD SET EDITOR -->
+    <section id="editor" class="hidden">
+      <h1 id="editorTitle">Create Word Set</h1>
+      <p class="subtitle">Add French phrases with their translations. Use ✨ to auto-generate distractors.</p>
+      <div class="form-group">
+        <label for="setName">Set Name</label>
+        <input type="text" id="setName" placeholder="e.g. Travel Vocabulary">
+      </div>
+      <div id="wordEntries"></div>
+      <div class="actions" style="margin-top:16px;">
+        <button id="addWordBtn" class="secondary">+ Add Word</button>
+        <button id="generateAllBtn" class="magic">✨ Generate All Distractors</button>
+        <button id="saveSetBtn" class="primary">Save Set</button>
+        <button id="cancelEditBtn" class="secondary">Cancel</button>
+      </div>
+    </section>
+
+    <!-- QUIZ -->
+    <section id="quiz" class="hidden">
+      <h1>French Vocabulary Quiz</h1>
+      <p class="subtitle" id="quizSetName">Intermediate · 5 questions</p>
+      <div class="progress-wrap"><div id="progress" class="progress"></div></div>
+      <div class="meta">
+        <span id="questionNumber">Question 1 of 5</span>
+        <span id="scoreLabel">Score: 0</span>
+      </div>
+      <div class="question-row">
+        <div id="question" class="question"></div>
+        <button id="audioBtn" class="audio-btn" title="Listen to pronunciation">🔊</button>
+      </div>
+      <div id="options" class="options"></div>
+      <div id="feedback" class="feedback" aria-live="polite"></div>
+      <div id="explanation" class="explanation"></div>
+      <div class="actions">
+        <button id="nextBtn" class="primary hidden">Next question</button>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="result" class="result hidden">
+      <h1>Quiz complete!</h1>
+      <div id="finalScore" class="score"></div>
+      <p id="resultMessage"></p>
+      <div class="actions" style="justify-content:center; margin-top:16px;">
+        <button id="restartBtn" class="primary">Play Again</button>
+        <button id="homeBtn" class="secondary">Home</button>
+      </div>
+      <div id="review" class="review"></div>
+    </section>
+  </div>
+</div>
+
+<script>
+// ============ DISTRACTOR POOL ============
+const DISTRACTOR_POOL = [
+  // Verbs / verbal phrases
+  { en: "to get dressed / ready", fr: "s'habiller / se préparer", type: "verb" },
+  { en: "to apologise / make amends", fr: "s'excuser", type: "verb" },
+  { en: "to hurry / rush about", fr: "se dépêcher", type: "verb" },
+  { en: "to avoid / steer clear of", fr: "éviter", type: "verb" },
+  { en: "to repair / fix up", fr: "réparer", type: "verb" },
+  { en: "to lend / borrow from", fr: "prêter / emprunter", type: "verb" },
+  { en: "to remove / take away", fr: "enlever / retirer", type: "verb" },
+  { en: "to refuse / turn down", fr: "refuser / rejeter", type: "verb" },
+  { en: "to forget / overlook", fr: "oublier / négliger", type: "verb" },
+  { en: "to put away / tidy up", fr: "ranger", type: "verb" },
+  { en: "to postpone / put off", fr: "reporter / remettre à plus tard", type: "verb" },
+  { en: "to translate / interpret", fr: "traduire / interpréter", type: "verb" },
+  { en: "to leave behind / abandon", fr: "laisser derrière / abandonner", type: "verb" },
+  { en: "to pay back / reimburse", fr: "rembourser", type: "verb" },
+  { en: "to disagree with / oppose", fr: "être en désaccord avec", type: "verb" },
+  { en: "to look like / resemble", fr: "ressembler à", type: "verb" },
+  { en: "to take after / inherit from", fr: "tenir de", type: "verb" },
+  { en: "to make fun of / mock", fr: "se moquer de", type: "verb" },
+  { en: "to hold onto / keep grip of", fr: "s'accrocher à", type: "verb" },
+  { en: "to keep quiet / stay silent", fr: "se taire / garder le silence", type: "verb" },
+  { en: "to take a break / rest", fr: "faire une pause / se reposer", type: "verb" },
+  { en: "to complain / grumble", fr: "se plaindre / râler", type: "verb" },
+  { en: "to give up / surrender", fr: "abandonner / renoncer", type: "verb" },
+  { en: "to carry out / perform", fr: "effectuer / réaliser", type: "verb" },
+  { en: "to bring about / cause", fr: "provoquer / entraîner", type: "verb" },
+  { en: "to point out / highlight", fr: "souligner / signaler", type: "verb" },
+  { en: "to put up with / tolerate", fr: "supporter / tolérer", type: "verb" },
+  { en: "to look into / investigate", fr: "enquêter / examiner", type: "verb" },
+  { en: "to come across / stumble upon", fr: "tomber sur", type: "verb" },
+  { en: "to stand out / be noticeable", fr: "se démarquer / ressortir", type: "verb" },
+  { en: "to back down / give in", fr: "céder / reculer", type: "verb" },
+  { en: "to bring up / raise (a topic)", fr: "aborder / soulever", type: "verb" },
+  { en: "to set up / establish", fr: "mettre en place / fonder", type: "verb" },
+  { en: "to work out / figure out", fr: "trouver / résoudre", type: "verb" },
+  { en: "to look forward to / anticipate", fr: "avoir hâte de", type: "verb" },
+  { en: "to turn down / reject", fr: "rejeter / décliner", type: "verb" },
+  { en: "to run out of / exhaust", fr: "manquer de / épuiser", type: "verb" },
+  { en: "to keep track of / monitor", fr: "suivre / surveiller", type: "verb" },
+  { en: "to fall short of / miss", fr: "ne pas atteindre", type: "verb" },
+  { en: "to make up for / compensate", fr: "compenser / rattraper", type: "verb" },
+  // Nouns
+  { en: "a receipt / invoice", fr: "un reçu / une facture", type: "noun" },
+  { en: "a staircase / landing", fr: "un escalier", type: "noun" },
+  { en: "a schedule / timetable", fr: "un emploi du temps / un horaire", type: "noun" },
+  { en: "a meal / dinner", fr: "un repas / un dîner", type: "noun" },
+  { en: "a neighbourhood / district", fr: "un quartier", type: "noun" },
+  { en: "a suitcase / bag", fr: "une valise / un sac", type: "noun" },
+  { en: "a discount / reduction", fr: "une réduction / une remise", type: "noun" },
+  { en: "a celebration / party", fr: "une fête / une célébration", type: "noun" },
+  { en: "a mistake / error", fr: "une erreur / une faute", type: "noun" },
+  { en: "an appointment / meeting", fr: "un rendez-vous", type: "noun" },
+  { en: "a complaint / grievance", fr: "une plainte / une réclamation", type: "noun" },
+  { en: "a warning / alert", fr: "un avertissement / une mise en garde", type: "noun" },
+  { en: "a delay / setback", fr: "un retard / un contretemps", type: "noun" },
+  { en: "a requirement / obligation", fr: "une exigence / une obligation", type: "noun" },
+  { en: "a disagreement / dispute", fr: "un désaccord / un différend", type: "noun" },
+  { en: "a shortcut / detour", fr: "un raccourci / un détour", type: "noun" },
+  { en: "a refund / reimbursement", fr: "un remboursement", type: "noun" },
+  { en: "a neighbour / local", fr: "un voisin", type: "noun" },
+  { en: "a power cut / outage", fr: "une coupure de courant", type: "noun" },
+  { en: "a reservation / booking", fr: "une réservation", type: "noun" },
+  { en: "a payment / transaction", fr: "un paiement / une transaction", type: "noun" },
+  { en: "a threshold / turning point", fr: "un seuil / un tournant", type: "noun" },
+  { en: "a breakthrough / advance", fr: "une percée / une avancée", type: "noun" },
+  { en: "a drawback / downside", fr: "un inconvénient", type: "noun" },
+  { en: "a loophole / gap", fr: "une lacune / une faille", type: "noun" },
+  { en: "a survey / poll", fr: "un sondage / une enquête", type: "noun" },
+  { en: "a trade-off / compromise", fr: "un compromis", type: "noun" },
+  { en: "a backlog / pile-up", fr: "un retard accumulé", type: "noun" },
+  { en: "a shortcoming / flaw", fr: "une lacune / un défaut", type: "noun" },
+  { en: "a milestone / landmark", fr: "une étape / un jalon", type: "noun" },
+  // Adjectives / adverbs / prepositions
+  { en: "expensive / costly", fr: "cher / coûteux", type: "adj" },
+  { en: "crowded / busy", fr: "bondé / animé", type: "adj" },
+  { en: "temporary / short-lived", fr: "temporaire / éphémère", type: "adj" },
+  { en: "therefore / consequently", fr: "donc / par conséquent", type: "adv" },
+  { en: "perhaps / maybe", fr: "peut-être", type: "adv" },
+  { en: "usually / normally", fr: "habituellement / normalement", type: "adv" },
+  { en: "immediately / right away", fr: "immédiatement / tout de suite", type: "adv" },
+  { en: "especially / particularly", fr: "surtout / particulièrement", type: "adv" },
+  { en: "recently / lately", fr: "récemment / dernièrement", type: "adv" },
+  { en: "in front of / ahead of", fr: "devant / en face de", type: "prep" },
+  { en: "instead of / in place of", fr: "au lieu de", type: "prep" },
+  { en: "in spite of / regardless of", fr: "malgré / en dépit de", type: "prep" },
+  { en: "among / between", fr: "parmi / entre", type: "prep" },
+  { en: "during / throughout", fr: "pendant / durant", type: "prep" },
+  { en: "towards / in the direction of", fr: "vers / en direction de", type: "prep" },
+  { en: "opposed to / against", fr: "opposé à / contre", type: "adj" },
+  { en: "fond of / keen on", fr: "friand de / amateur de", type: "adj" },
+  { en: "tired of / fed up with", fr: "fatigué de / lassé de", type: "adj" },
+  { en: "widespread / common", fr: "répandu / courant", type: "adj" },
+  { en: "thorough / comprehensive", fr: "approfondi / complet", type: "adj" },
+  { en: "ongoing / current", fr: "en cours / actuel", type: "adj" },
+  { en: "straightforward / simple", fr: "simple / direct", type: "adj" },
+  { en: "gradually / little by little", fr: "progressivement / peu à peu", type: "adv" },
+  { en: "barely / hardly", fr: "à peine", type: "adv" },
+  { en: "nowhere near / far from", fr: "loin de", type: "adv" },
+];
+
+function detectType(correctText) {
+  const t = correctText.toLowerCase().trim();
+  if (/^to\s/.test(t)) return "verb";
+  if (/^a(n)?\s/.test(t) || /^the\s/.test(t) || /^une?\s/.test(t)) return "noun";
+  if (/^(despite|in|on|at|by|with|from|to|for|of|among|between|during|towards|instead|following)/i.test(t)) return "prep";
+  if (/^(very|quite|rather|barely|hardly|always|never|often|usually|immediately|especially|recently|gradually)/i.test(t)) return "adv";
+  return "adj";
+}
+
+function answersOverlap(a, b) {
+
+    const splitAnswers = str =>
+        str
+            .toLowerCase()
+            .split(/[\/;,]/)
+            .map(s => s.trim())
+            .filter(Boolean);
+
+    const setA = new Set(splitAnswers(a));
+    const setB = new Set(splitAnswers(b));
+
+    for (const answer of setA) {
+        if (setB.has(answer)) return true;
+    }
+
+    return false;
+}
+
+function autoGenerateDistractors(frenchWord, correctText, currentSetWords = []) {
+
+  const type = detectType(correctText);
+
+  const correctLower = correctText.toLowerCase();
+
+
+
+  // Build distractors from the current word set
+
+  const setPool = currentSetWords
+
+    .filter(w =>
+
+      w.correct &&
+
+      !answersOverlap(w.correct, correctText) &&
+
+      (!frenchWord || w.french.toLowerCase() !== frenchWord.toLowerCase())
+
+    )
+
+    .map(w => ({
+
+      en: w.correct,
+
+      fr: w.french,
+
+      type: detectType(w.correct)
+
+    }));
+
+
+
+  // Same grammar type from current set
+
+  let candidates = setPool.filter(w => w.type === type);
+
+
+
+  // Then same type from built-in pool
+
+  if (candidates.length < 3) {
+
+    candidates.push(
+
+      ...DISTRACTOR_POOL.filter(d =>
+
+        d.type === type &&
+
+        !answersOverlap(d.en, correctText) &&
+
+        !candidates.some(c => c.en === d.en)
+
+      )
+
+    );
+
+  }
+
+
+
+  // Then anything else from current set
+
+  if (candidates.length < 3) {
+
+    candidates.push(
+
+      ...setPool.filter(w =>
+
+        !candidates.some(c => c.en === w.en)
+
+      )
+
+    );
+
+  }
+
+
+
+  // Finally anything else from built-in pool
+
+  if (candidates.length < 3) {
+
+    candidates.push(
+
+      ...DISTRACTOR_POOL.filter(d =>
+
+        !answersOverlap(d.en, correctText) &&
+
+        !candidates.some(c => c.en === d.en)
+
+      )
+
+    );
+
+  }
+
+
+
+  // Shuffle and pick three
+
+  const shuffled = candidates.sort(() => Math.random() - 0.5);
+
+
+
+  const chosen = [];
+
+
+
+  for (const candidate of shuffled) {
+
+
+
+      if (chosen.some(c => answersOverlap(c.en, candidate.en))) {
+
+          continue;
+
+      }
+
+
+
+      chosen.push(candidate);
+
+
+
+      if (chosen.length === 3) break;
+
+  }
+
+
+
+  return chosen.map(p => ({
+
+      text: p.en,
+
+      note: `This would be « ${p.fr} ».`
+
+  }));
+
+
+
+  return shuffled.map(p => ({
+
+    text: p.en,
+
+    note: `This would be « ${p.fr} ».`
+
+  }));
+
+}
+
+// ============ DEFAULT WORD SET ============
+const DEFAULT_SET = {
+  id: "default_intermediate",
+  name: "Intermediate French",
+  builtIn: true,
+  words: [
+    { french: "pourtant", question: "Que signifie « pourtant » ?", correct: "however / nevertheless", correctNote: "« Pourtant » means however, nevertheless, or yet.", distractors: [{ text: "therefore / consequently", note: "This would be « donc » or « par conséquent »." }, { text: "perhaps / maybe", note: "This would be « peut-être »." }, { text: "usually / normally", note: "This would be « habituellement » or « normalement »." }] },
+    { french: "se débrouiller", question: "Que signifie « se débrouiller » ?", correct: "to get by / manage", correctNote: "« Se débrouiller » means to manage, cope, or get by.", distractors: [{ text: "to get dressed / ready", note: "This would be « s'habiller » or « se préparer »." }, { text: "to apologise / make amends", note: "This would be « s'excuser »." }, { text: "to hurry / rush about", note: "This would be « se dépêcher »." }] },
+    { french: "une démarche", question: "Que signifie « une démarche » ?", correct: "a formal procedure / step", correctNote: "« Une démarche » can mean a formal procedure or administrative step.", distractors: [{ text: "a meal / dinner", note: "This would be « un repas » or « un dîner »." }, { text: "a neighbourhood / district", note: "This would be « un quartier »." }, { text: "a suitcase / bag", note: "This would be « une valise » or « un sac »." }] },
+    { french: "fiable", question: "Que signifie « fiable » ?", correct: "reliable / dependable", correctNote: "« Fiable » means reliable or dependable.", distractors: [{ text: "expensive / costly", note: "This would be « cher » or « coûteux »." }, { text: "crowded / busy", note: "This would be « bondé » or « animé »." }, { text: "temporary / short-lived", note: "This would be « temporaire » or « éphémère »." }] },
+    { french: "une pénurie", question: "Que signifie « une pénurie » ?", correct: "a shortage / scarcity", correctNote: "« Une pénurie » means a shortage or scarcity.", distractors: [{ text: "a discount / reduction", note: "This would be « une réduction » or « une remise »." }, { text: "a celebration / party", note: "This would be « une fête » or « une célébration »." }, { text: "a mistake / error", note: "This would be « une erreur » or « une faute »." }] },
+    { french: "s'apercevoir de", question: "Que signifie « s'apercevoir de » ?", correct: "to realise / notice", correctNote: "« S'apercevoir de » means to realise or notice something.", distractors: [{ text: "to avoid / steer clear of", note: "This would be « éviter »." }, { text: "to repair / fix up", note: "This would be « réparer »." }, { text: "to lend / borrow from", note: "This would be « prêter » or « emprunter »." }] },
+    { french: "un enjeu", question: "Que signifie « un enjeu » ?", correct: "a stake / issue", correctNote: "« Un enjeu » refers to a stake, challenge, or important issue.", distractors: [{ text: "a receipt / invoice", note: "This would be « un reçu » or « une facture »." }, { text: "a staircase / landing", note: "This would be « un escalier »." }, { text: "a schedule / timetable", note: "This would be « un emploi du temps » or « un horaire »." }] },
+    { french: "accorder de l'importance", question: "Que signifie « accorder de l'importance » ?", correct: "to attach / give importance", correctNote: "« Accorder de l'importance à » means to attach or give importance to something.", distractors: [{ text: "to remove / take away", note: "This would be « enlever » or « retirer »." }, { text: "to refuse / turn down", note: "This would be « refuser » or « rejeter »." }, { text: "to forget / overlook", note: "This would be « oublier » or « négliger »." }] },
+    { french: "à la suite de", question: "Que signifie « à la suite de » ?", correct: "following / as a result of", correctNote: "« À la suite de » means following or as a result of.", distractors: [{ text: "in front of / ahead of", note: "This would be « devant » or « en face de »." }, { text: "instead of / in place of", note: "This would be « au lieu de »." }, { text: "in spite of / regardless of", note: "This would be « malgré » or « en dépit de »." }] },
+    { french: "remettre en question", question: "Que signifie « remettre en question » ?", correct: "to question / call into question", correctNote: "« Remettre en question » means to question or call something into question.", distractors: [{ text: "to put away / tidy up", note: "This would be « ranger »." }, { text: "to postpone / put off", note: "This would be « reporter » or « remettre à plus tard »." }, { text: "to translate / interpret", note: "This would be « traduire » or « interpréter »." }] },
+    { french: "un aperçu", question: "Que signifie « un aperçu » ?", correct: "an overview / glimpse", correctNote: "« Un aperçu » means an overview, preview, or glimpse.", distractors: [{ text: "an appointment / meeting", note: "This would be « un rendez-vous »." }, { text: "a complaint / grievance", note: "This would be « une plainte » or « une réclamation »." }, { text: "a warning / alert", note: "This would be « un avertissement » or « une mise en garde »." }] },
+    { french: "parvenir à", question: "Que signifie « parvenir à » ?", correct: "to manage / succeed in", correctNote: "« Parvenir à faire quelque chose » means to manage or succeed in doing it.", distractors: [{ text: "to leave behind / abandon", note: "This would be « laisser derrière » or « abandonner »." }, { text: "to pay back / reimburse", note: "This would be « rembourser »." }, { text: "to disagree with / oppose", note: "This would be « être en désaccord avec »." }] },
+    { french: "malgré", question: "Que signifie « malgré » ?", correct: "despite / in spite of", correctNote: "« Malgré » means despite or in spite of.", distractors: [{ text: "among / between", note: "This would be « parmi » or « entre »." }, { text: "during / throughout", note: "This would be « pendant » or « durant »." }, { text: "towards / in the direction of", note: "This would be « vers » or « en direction de »." }] },
+    { french: "une amélioration", question: "Que signifie « une amélioration » ?", correct: "an improvement / enhancement", correctNote: "« Une amélioration » means an improvement.", distractors: [{ text: "a delay / setback", note: "This would be « un retard » or « un contretemps »." }, { text: "a requirement / obligation", note: "This would be « une exigence » or « une obligation »." }, { text: "a disagreement / dispute", note: "This would be « un désaccord » or « un différend »." }] },
+    { french: "faire face à", question: "Que signifie « faire face à » ?", correct: "to face / deal with", correctNote: "« Faire face à » means to face or deal with a situation.", distractors: [{ text: "to look like / resemble", note: "This would be « ressembler à »." }, { text: "to take after / inherit from", note: "This would be « tenir de »." }, { text: "to make fun of / mock", note: "This would be « se moquer de »." }] },
+    { french: "un délai", question: "Que signifie « un délai » ?", correct: "a deadline / time period", correctNote: "« Un délai » can refer to a deadline, delay, or allotted time period.", distractors: [{ text: "a shortcut / detour", note: "This would be « un raccourci » or « un détour »." }, { text: "a refund / reimbursement", note: "This would be « un remboursement »." }, { text: "a neighbour / local", note: "This would be « un voisin »." }] },
+    { french: "néanmoins", question: "Que signifie « néanmoins » ?", correct: "nevertheless / nonetheless", correctNote: "« Néanmoins » means nevertheless or nonetheless.", distractors: [{ text: "immediately / right away", note: "This would be « immédiatement » or « tout de suite »." }, { text: "especially / particularly", note: "This would be « surtout » or « particulièrement »." }, { text: "recently / lately", note: "This would be « récemment » or « dernièrement »." }] },
+    { french: "une prise de conscience", question: "Que signifie « une prise de conscience » ?", correct: "an awareness / realisation", correctNote: "« Une prise de conscience » means an awareness or realisation.", distractors: [{ text: "a power cut / outage", note: "This would be « une coupure de courant »." }, { text: "a reservation / booking", note: "This would be « une réservation »." }, { text: "a payment / transaction", note: "This would be « un paiement » or « une transaction »." }] },
+    { french: "susceptible de", question: "Que signifie « susceptible de » ?", correct: "likely to / liable to", correctNote: "« Être susceptible de » means to be likely or liable to do something.", distractors: [{ text: "opposed to / against", note: "This would be « opposé à » or « contre »." }, { text: "fond of / keen on", note: "This would be « friand de » or « amateur de »." }, { text: "tired of / fed up with", note: "This would be « fatigué de » or « lassé de »." }] },
+    { french: "tenir compte de", question: "Que signifie « tenir compte de » ?", correct: "to take into account / consider", correctNote: "« Tenir compte de » means to take something into account or consideration.", distractors: [{ text: "to hold onto / keep grip of", note: "This would be « s'accrocher à » or « tenir fermement »." }, { text: "to keep quiet / stay silent", note: "This would be « se taire » or « garder le silence »." }, { text: "to take a break / rest", note: "This would be « faire une pause » or « se reposer »." }] }
+  ]
+};
+
+// ============ STATE ============
+let wordSets = [];
+let selectedSetId = null;
+let quizQuestions = [];
+let current = 0;
+let score = 0;
+let answered = false;
+let results = [];
+let editingSetId = null;
+
+// ============ STORAGE ============
+function loadSets() {
+  const stored = localStorage.getItem("frenchQuizSets");
+  if (stored) {
+    wordSets = JSON.parse(stored);
+    if (!wordSets.find(s => s.id === DEFAULT_SET.id)) {
+      wordSets.unshift(DEFAULT_SET);
+    }
+  } else {
+    wordSets = [DEFAULT_SET];
+  }
+  saveSets();
+}
+
+function saveSets() {
+  localStorage.setItem("frenchQuizSets", JSON.stringify(wordSets));
+}
+
+// ============ DOM REFS ============
+const homeEl = document.getElementById("home");
+const editorEl = document.getElementById("editor");
+const quizEl = document.getElementById("quiz");
+const resultEl = document.getElementById("result");
+
+const setSelectList = document.getElementById("setSelectList");
+const manageSetList = document.getElementById("manageSetList");
+const startQuizBtn = document.getElementById("startQuizBtn");
+const createSetBtn = document.getElementById("createSetBtn");
+
+const editorTitle = document.getElementById("editorTitle");
+const setNameInput = document.getElementById("setName");
+const wordEntriesEl = document.getElementById("wordEntries");
+const addWordBtn = document.getElementById("addWordBtn");
+const saveSetBtn = document.getElementById("saveSetBtn");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+const quizSetName = document.getElementById("quizSetName");
+const questionEl = document.getElementById("question");
+const optionsEl = document.getElementById("options");
+const feedbackEl = document.getElementById("feedback");
+const explanationEl = document.getElementById("explanation");
+const nextBtn = document.getElementById("nextBtn");
+const progressEl = document.getElementById("progress");
+const questionNumberEl = document.getElementById("questionNumber");
+const scoreLabelEl = document.getElementById("scoreLabel");
+const audioBtn = document.getElementById("audioBtn");
+
+const finalScoreEl = document.getElementById("finalScore");
+const resultMessageEl = document.getElementById("resultMessage");
+const reviewEl = document.getElementById("review");
+const restartBtn = document.getElementById("restartBtn");
+const homeBtn = document.getElementById("homeBtn");
+const generateAllBtn = document.getElementById("generateAllBtn");
+
+// ============ TABS ============
+document.querySelectorAll(".nav-tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    const target = tab.dataset.tab;
+    document.getElementById("tab-play").classList.toggle("hidden", target !== "play");
+    document.getElementById("tab-manage").classList.toggle("hidden", target !== "manage");
+    if (target === "manage") renderManageList();
+  });
+});
+
+// ============ HOME / SET SELECTION ============
+function renderSetSelectList() {
+  setSelectList.innerHTML = wordSets.map(s => `
+    <li>
+      <div class="set-info">
+        <div class="set-name">${escapeHtml(s.name)}</div>
+        <div class="set-count">${s.words.length} words</div>
+      </div>
+      <div class="set-actions">
+        <button onclick="selectSet('${s.id}')" style="background:var(--accent);color:white;border-color:var(--accent);">Select</button>
+      </div>
+    </li>
+  `).join("");
+  startQuizBtn.classList.add("hidden");
+}
+
+function selectSet(id) {
+  selectedSetId = id;
+  setSelectList.querySelectorAll("li").forEach(li => li.style.outline = "none");
+  const items = setSelectList.querySelectorAll("li");
+  const idx = wordSets.findIndex(s => s.id === id);
+  if (idx >= 0 && items[idx]) items[idx].style.outline = "2px solid var(--accent)";
+  startQuizBtn.classList.remove("hidden");
+}
+
+function renderManageList() {
+  manageSetList.innerHTML = wordSets.map(s => `
+    <li>
+      <div class="set-info">
+        <div class="set-name">${escapeHtml(s.name)} ${s.builtIn ? '<span style="font-size:.75rem;color:var(--muted);">(built-in)</span>' : ''}</div>
+        <div class="set-count">${s.words.length} words</div>
+      </div>
+      <div class="set-actions">
+        <button onclick="editSet('${s.id}')">Edit</button>
+        ${s.builtIn ? '' : `<button class="del" onclick="deleteSet('${s.id}')">Delete</button>`}
+      </div>
+    </li>
+  `).join("");
+}
+
+// ============ WORD SET EDITOR ============
+createSetBtn.addEventListener("click", () => openEditor(null));
+generateAllBtn.addEventListener("click", generateAllDistractors);
+
+function generateAllDistractors() {
+
+    if (!confirm(
+        "Generate distractors for every word? Existing distractors will be replaced."
+    )) {
+        return;
+    }
+
+    const entries = Array.from(
+        wordEntriesEl.querySelectorAll(".word-entry")
+    );
+
+    if (!entries.length) return;
+
+    // Build the current word list once
+    const currentWords = entries.map(entry => ({
+        french: entry.querySelector(".we-french").value.trim(),
+        correct: entry.querySelector(".we-correct").value.trim()
+    }));
+
+    entries.forEach(entry => {
+
+        const french = entry.querySelector(".we-french").value.trim();
+        const correct = entry.querySelector(".we-correct").value.trim();
+
+        if (!french || !correct) return;
+
+        const generated = autoGenerateDistractors(
+            french,
+            correct,
+            currentWords
+        );
+
+        entry.querySelector(".we-d1").value =
+            `${generated[0].text} | ${generated[0].note}`;
+
+        entry.querySelector(".we-d2").value =
+            `${generated[1].text} | ${generated[1].note}`;
+
+        entry.querySelector(".we-d3").value =
+            `${generated[2].text} | ${generated[2].note}`;
+
+        // Fill the note if it's empty
+        const noteInput = entry.querySelector(".we-correctnote");
+
+        if (!noteInput.value.trim()) {
+            noteInput.value = `« ${french} » means ${correct}.`;
+        }
+
+    });
+
+    alert("Distractors generated for all words.");
+}
+
+function openEditor(setId) {
+  editingSetId = setId;
+  homeEl.classList.add("hidden");
+  editorEl.classList.remove("hidden");
+  wordEntriesEl.innerHTML = "";
+
+  if (setId) {
+    const set = wordSets.find(s => s.id === setId);
+    editorTitle.textContent = "Edit Word Set";
+    setNameInput.value = set.name;
+    set.words.forEach(w => addWordEntry(w));
+  } else {
+    editorTitle.textContent = "Create Word Set";
+    setNameInput.value = "";
+    addWordEntry();
+  }
+}
+
+function editSet(id) { openEditor(id); }
+
+function deleteSet(id) {
+  if (!confirm("Delete this word set?")) return;
+  wordSets = wordSets.filter(s => s.id !== id);
+  saveSets();
+  renderManageList();
+}
+
+function addWordEntry(word) {
+  const div = document.createElement("div");
+  div.className = "word-entry";
+  div.innerHTML = `
+    <button class="remove-word" title="Remove">&times;</button>
+    <div class="form-group">
+      <label>French phrase</label>
+      <input type="text" class="we-french" placeholder="e.g. pourtant" value="${word ? escapeHtml(word.french) : ''}">
+    </div>
+    <div class="form-group">
+      <label>Correct translation (use / for alternatives)</label>
+      <input type="text" class="we-correct" placeholder="e.g. however / nevertheless" value="${word ? escapeHtml(word.correct) : ''}">
+    </div>
+    <div class="form-group">
+      <label>Note for correct answer</label>
+      <input type="text" class="we-correctnote" placeholder="e.g. « Pourtant » means however or yet." value="${word ? escapeHtml(word.correctNote) : ''}">
+    </div>
+    <div class="auto-gen-row">
+      <span>✨ Auto-generate 3 plausible distractors from the French word</span>
+      <button class="magic auto-gen-btn" type="button">✨ Generate</button>
+    </div>
+    <div class="form-group">
+      <label>Distractor 1 (text | note)</label>
+      <input type="text" class="we-d1" placeholder="e.g. therefore / consequently | This would be « donc »." value="${word ? escapeHtml(word.distractors[0].text + ' | ' + word.distractors[0].note) : ''}">
+    </div>
+    <div class="form-group">
+      <label>Distractor 2 (text | note)</label>
+      <input type="text" class="we-d2" placeholder="e.g. perhaps / maybe | This would be « peut-être »." value="${word ? escapeHtml(word.distractors[1].text + ' | ' + word.distractors[1].note) : ''}">
+    </div>
+    <div class="form-group">
+      <label>Distractor 3 (text | note)</label>
+      <input type="text" class="we-d3" placeholder="e.g. usually / normally | This would be « habituellement »." value="${word ? escapeHtml(word.distractors[2].text + ' | ' + word.distractors[2].note) : ''}">
+    </div>
+  `;
+  div.querySelector(".remove-word").addEventListener("click", () => div.remove());
+
+  // Auto-generate button
+  div.querySelector(".auto-gen-btn").addEventListener("click", () => {
+    const french = div.querySelector(".we-french").value.trim();
+    const correct = div.querySelector(".we-correct").value.trim();
+    if (!french && !correct) {
+      alert("Enter at least the French word or the correct translation first.");
+      return;
+    }
+    const generated = autoGenerateDistractors(
+      french,
+      correct,
+      editingSetId
+        ? wordSets.find(s => s.id === editingSetId).words
+        : Array.from(wordEntriesEl.querySelectorAll(".word-entry")).map(entry => ({
+            french: entry.querySelector(".we-french").value.trim(),
+            correct: entry.querySelector(".we-correct").value.trim()
+          }))
+    );
+    div.querySelector(".we-d1").value = `${generated[0].text} | ${generated[0].note}`;
+    div.querySelector(".we-d2").value = `${generated[1].text} | ${generated[1].note}`;
+    div.querySelector(".we-d3").value = `${generated[2].text} | ${generated[2].note}`;
+
+    // Also auto-fill the correct note if empty
+    const noteInput = div.querySelector(".we-correctnote");
+    if (!noteInput.value.trim() && french && correct) {
+      noteInput.value = `« ${french} » means ${correct}.`;
+    }
+  });
+
+  wordEntriesEl.appendChild(div);
+}
+
+addWordBtn.addEventListener("click", () => addWordEntry());
+
+saveSetBtn.addEventListener("click", () => {
+  const name = setNameInput.value.trim();
+  if (!name) { alert("Please enter a set name."); return; }
+
+  const entries = wordEntriesEl.querySelectorAll(".word-entry");
+  const words = [];
+  for (const entry of entries) {
+    const french = entry.querySelector(".we-french").value.trim();
+    const correct = entry.querySelector(".we-correct").value.trim();
+    const correctNote = entry.querySelector(".we-correctnote").value.trim();
+    const d1raw = entry.querySelector(".we-d1").value.trim();
+    const d2raw = entry.querySelector(".we-d2").value.trim();
+    const d3raw = entry.querySelector(".we-d3").value.trim();
+
+    if (!french || !correct) continue;
+
+    const parseDistractor = (raw) => {
+      const parts = raw.split("|");
+      return { text: (parts[0] || "").trim(), note: (parts[1] || "").trim() };
+    };
+
+    words.push({
+      french,
+      question: `Que signifie « ${french} » ?`,
+      correct,
+      correctNote: correctNote || `« ${french} » means ${correct}.`,
+      distractors: [parseDistractor(d1raw), parseDistractor(d2raw), parseDistractor(d3raw)]
+    });
+  }
+
+  if (words.length === 0) { alert("Add at least one word."); return; }
+
+  if (editingSetId) {
+    const set = wordSets.find(s => s.id === editingSetId);
+    set.name = name;
+    set.words = words;
+  } else {
+    wordSets.push({
+      id: "custom_" + Date.now(),
+      name,
+      builtIn: false,
+      words
+    });
+  }
+
+  saveSets();
+  closeEditor();
+});
+
+cancelEditBtn.addEventListener("click", closeEditor);
+
+function closeEditor() {
+  editorEl.classList.add("hidden");
+  homeEl.classList.remove("hidden");
+  renderSetSelectList();
+  renderManageList();
+}
+
+// ============ QUIZ LOGIC ============
+startQuizBtn.addEventListener("click", () => {
+  if (!selectedSetId) return;
+  const set = wordSets.find(s => s.id === selectedSetId);
+  if (!set || set.words.length < 1) return;
+
+  const count = Math.min(5, set.words.length);
+  const shuffled = [...set.words].sort(() => Math.random() - 0.5);
+  quizQuestions = shuffled.slice(0, count).map(w => buildQuestion(w));
+
+  current = 0;
+  score = 0;
+  results = [];
+  answered = false;
+
+  quizSetName.textContent = `${set.name} · ${count} questions`;
+  homeEl.classList.add("hidden");
+  quizEl.classList.remove("hidden");
+  resultEl.classList.add("hidden");
+  renderQuestion();
+});
+
+function buildQuestion(word) {
+  const allOptions = [
+    { text: word.correct, note: word.correctNote, isCorrect: true },
+    ...word.distractors.map(d => ({ text: d.text, note: d.note, isCorrect: false }))
+  ];
+  for (let i = allOptions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [allOptions[i], allOptions[j]] = [allOptions[j], allOptions[i]];
+  }
+  const correctIndex = allOptions.findIndex(o => o.isCorrect);
+  return {
+    french: word.french,
+    question: word.question,
+    options: allOptions.map(o => o.text),
+    notes: allOptions.map(o => o.note),
+    answer: correctIndex
+  };
+}
+
+function renderQuestion() {
+  answered = false;
+  const item = quizQuestions[current];
+  questionNumberEl.textContent = `Question ${current + 1} of ${quizQuestions.length}`;
+  scoreLabelEl.textContent = `Score: ${score}`;
+  progressEl.style.width = `${((current + 1) / quizQuestions.length) * 100}%`;
+  questionEl.textContent = item.question;
+  feedbackEl.textContent = "";
+  feedbackEl.className = "feedback";
+  explanationEl.textContent = "";
+  nextBtn.classList.add("hidden");
+  optionsEl.innerHTML = "";
+
+  item.options.forEach((option, index) => {
+    const button = document.createElement("button");
+    button.className = "option";
+    button.textContent = option;
+    button.addEventListener("click", () => chooseAnswer(index, button));
+    optionsEl.appendChild(button);
+  });
+}
+
+function chooseAnswer(index, selectedButton) {
+  if (answered) return;
+  answered = true;
+
+  const item = quizQuestions[current];
+  const buttons = [...optionsEl.querySelectorAll(".option")];
+  buttons.forEach(btn => btn.disabled = true);
+
+  buttons[item.answer].classList.add("correct");
+
+  const isCorrect = index === item.answer;
+  if (isCorrect) {
+    score++;
+    feedbackEl.textContent = "Correct! ✓";
+    feedbackEl.className = "feedback correct";
+  } else {
+    selectedButton.classList.add("incorrect");
+    feedbackEl.textContent = "Not quite.";
+    feedbackEl.className = "feedback incorrect";
+  }
+
+  buttons.forEach((btn, i) => {
+    const noteSpan = document.createElement("span");
+    noteSpan.className = "option-translation";
+    noteSpan.textContent = item.notes[i];
+    btn.appendChild(noteSpan);
+  });
+
+  results.push({
+    question: item.question,
+    french: item.french,
+    selected: item.options[index],
+    selectedNote: item.notes[index],
+    correct: item.options[item.answer],
+    correctNote: item.notes[item.answer],
+    isCorrect
+  });
+
+  scoreLabelEl.textContent = `Score: ${score}`;
+  nextBtn.textContent = current === quizQuestions.length - 1 ? "See results" : "Next question";
+  nextBtn.classList.remove("hidden");
+}
+
+nextBtn.addEventListener("click", () => {
+  if (current < quizQuestions.length - 1) {
+    current++;
+    renderQuestion();
+  } else {
+    showResults();
+  }
+});
+
+// ============ AUDIO ============
+audioBtn.addEventListener("click", () => {
+  if (!quizQuestions[current]) return;
+  const text = quizQuestions[current].french;
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "fr-FR";
+    utter.rate = 0.85;
+    audioBtn.classList.add("speaking");
+    utter.onend = () => audioBtn.classList.remove("speaking");
+    utter.onerror = () => audioBtn.classList.remove("speaking");
+    window.speechSynthesis.speak(utter);
+  } else {
+    alert("Speech synthesis is not supported in this browser.");
+  }
+});
+
+// ============ RESULTS ============
+function showResults() {
+  quizEl.classList.add("hidden");
+  resultEl.classList.remove("hidden");
+  const total = quizQuestions.length;
+  const percentage = Math.round((score / total) * 100);
+  finalScoreEl.textContent = `${score} / ${total}`;
+  resultMessageEl.textContent =
+    percentage >= 90 ? "Excellent work — your French vocabulary is very strong!" :
+    percentage >= 75 ? "Great job — you have a solid vocabulary foundation." :
+    percentage >= 50 ? "Good effort — keep practising and you'll improve quickly." :
+    "Keep practising — reviewing these words will help build confidence.";
+
+  const correctResults = results.filter(r => r.isCorrect);
+  const incorrectResults = results.filter(r => !r.isCorrect);
+
+  let html = "";
+
+  if (incorrectResults.length > 0) {
+    html += `<div class="review-section incorrect-section">
+      <h3>✗ Incorrect (${incorrectResults.length})</h3>
+      ${incorrectResults.map(r => `
+        <div class="review-item">
+          <strong>${escapeHtml(r.question)}</strong>
+          <div class="review-answer">Your answer: ${escapeHtml(r.selected)}</div>
+          <div class="review-answer">${escapeHtml(r.selectedNote)}</div>
+          <div class="review-answer" style="margin-top:4px;"><strong>Correct:</strong> ${escapeHtml(r.correct)}</div>
+          <div class="review-answer">${escapeHtml(r.correctNote)}</div>
+        </div>
+      `).join("")}
+    </div>`;
+  }
+
+  if (correctResults.length > 0) {
+    html += `<div class="review-section correct-section">
+      <h3>✓ Correct (${correctResults.length})</h3>
+      ${correctResults.map(r => `
+        <div class="review-item">
+          <strong>${escapeHtml(r.question)}</strong>
+          <div class="review-answer">${escapeHtml(r.correct)} — ${escapeHtml(r.correctNote)}</div>
+        </div>
+      `).join("")}
+    </div>`;
+  }
+
+  reviewEl.innerHTML = html;
+}
+
+restartBtn.addEventListener("click", () => {
+  resultEl.classList.add("hidden");
+  homeEl.classList.remove("hidden");
+  renderSetSelectList();
+  if (selectedSetId) selectSet(selectedSetId);
+});
+
+homeBtn.addEventListener("click", () => {
+  resultEl.classList.add("hidden");
+  homeEl.classList.remove("hidden");
+  renderSetSelectList();
+});
+
+// ============ UTILS ============
+function escapeHtml(value) {
+  if (!value) return "";
+  return value.replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+  }[char]));
+}
+
+// ============ INIT ============
+loadSets();
+renderSetSelectList();
+</script>
+</body>
+</html>
