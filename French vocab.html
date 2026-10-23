@@ -15,6 +15,7 @@
     --correct: #15803d;
     --incorrect: #b91c1c;
     --border: #dbe3ee;
+    --peek: #f59e0b;
   }
   * { box-sizing: border-box; }
   body {
@@ -25,7 +26,8 @@
     min-height: 100vh;
     padding: 24px;
   }
-  .container { max-width: 800px; margin: 0 auto; }
+  .container { max-width: 800px; margin: 0 auto; transition: max-width .3s ease; }
+  .container.wide { max-width: 1500px; }
   .card {
     background: var(--card);
     border: 1px solid var(--border);
@@ -73,6 +75,12 @@
   button.option:disabled { cursor: default; }
   button.option.correct { border-color: var(--correct); background: #f0fdf4; }
   button.option.incorrect { border-color: var(--incorrect); background: #fef2f2; }
+  .option-key {
+    display: inline-block; min-width: 22px; margin-right: 8px;
+    font-size: .8rem; font-weight: 700; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 6px;
+    text-align: center; padding: 1px 5px;
+  }
   .option-translation {
     display: block; font-size: .85rem; color: var(--muted);
     margin-top: 6px; font-style: italic;
@@ -82,7 +90,9 @@
   }
   .feedback.correct { color: var(--correct); }
   .feedback.incorrect { color: var(--incorrect); }
+  .feedback.hint { color: var(--muted); font-weight: 500; font-size: .92rem; }
   .explanation { color: var(--muted); font-size: .95rem; margin-bottom: 20px; }
+  .explanation:empty { display: none; }
   .actions { display: flex; gap: 10px; flex-wrap: wrap; }
   .primary, .secondary, .danger, .magic {
     border: 0; border-radius: 10px; padding: 12px 18px;
@@ -99,6 +109,7 @@
     color: white; font-size: .85rem; padding: 8px 14px;
   }
   .magic:hover { opacity: .9; }
+  .primary.small, .secondary.small { padding: 8px 14px; font-size: .9rem; }
   .hidden { display: none !important; }
   .result { text-align: center; }
   .score { font-size: 3.5rem; font-weight: 800; margin: 10px 0; color: var(--accent); }
@@ -117,6 +128,20 @@
   .review-item strong { display: block; margin-bottom: 5px; }
   .review-answer { color: var(--muted); font-size: .95rem; }
 
+  /* Sticky quiz footer: feedback + Next button always on screen */
+  .quiz-footer {
+    position: sticky; bottom: 0; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    margin: 18px -28px -28px; padding: 14px 28px;
+    min-height: 72px;
+    background: rgba(255, 255, 255, .97);
+    border-top: 1px solid var(--border);
+    border-radius: 0 0 18px 18px;
+    box-shadow: 0 -8px 14px -12px rgba(15, 23, 42, .35);
+  }
+  .quiz-footer .feedback { margin: 0; min-height: 0; }
+
   .set-list { list-style: none; padding: 0; margin: 0 0 20px; }
   .set-list li {
     display: flex; align-items: center; justify-content: space-between;
@@ -133,6 +158,25 @@
   }
   .set-list li .set-actions button:hover { background: #f1f5f9; }
   .set-list li .set-actions button.del:hover { background: #fee2e2; color: var(--incorrect); }
+
+  .play-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap; margin-bottom: 12px;
+  }
+  .play-head h2 { margin: 0; }
+  .start-row {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px;
+    background: #f8fbff;
+  }
+  .start-row label { font-weight: 600; font-size: .95rem; }
+  .round-input {
+    width: 80px; padding: 8px 10px; border: 2px solid var(--border);
+    border-radius: 10px; font: inherit; font-size: 1rem;
+  }
+  .round-input:focus { outline: none; border-color: var(--accent); }
+  .round-max { color: var(--muted); font-size: .9rem; }
+  .start-row .primary { margin-left: auto; }
 
   .form-group { margin-bottom: 16px; }
   .form-group label { display: block; font-weight: 600; margin-bottom: 6px; font-size: .9rem; }
@@ -179,13 +223,22 @@
   .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
   .nav-tab:hover { color: var(--text); }
 
+  .btn-delete {
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 12px; cursor: pointer; color: var(--muted); font-size: .85rem;
+  }
+  .btn-delete:hover { background: #fee2e2; color: var(--incorrect); border-color: #fecaca; }
+
   @media (max-width: 600px) {
     body { padding: 12px; }
     .card { padding: 20px; }
     h1 { font-size: 1.6rem; }
     .question-row { flex-wrap: wrap; }
+    .quiz-footer { margin: 18px -20px -20px; padding: 12px 20px; }
+    .start-row .primary { margin-left: 0; width: 100%; }
   }
-    /* ============ CONJUGATIONS ============ */
+
+  /* ============ CONJUGATIONS ============ */
   .conj-hint { color: var(--muted); font-size: .92rem; margin: 0 0 8px; }
   .conj-toolbar {
     position: sticky; top: 0; z-index: 50;
@@ -216,7 +269,6 @@
   .switch input:checked + .slider::before { transform: translateX(24px); }
   .switch input:focus-visible + .slider { outline: 3px solid #93c5fd; outline-offset: 2px; }
   .conj-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .primary.small, .secondary.small { padding: 8px 14px; font-size: .9rem; }
 
   .verb-block {
     border: 1px solid var(--border); border-radius: 14px;
@@ -230,11 +282,12 @@
   }
   .verb-name-input:hover { border-color: var(--border); }
   .verb-name-input:focus { outline: none; border-color: var(--accent); background: #fff; }
-  .remove-verb {
-    background: #fff; border: 1px solid var(--border); border-radius: 8px;
-    padding: 6px 12px; cursor: pointer; color: var(--muted); font-size: .85rem;
+
+  /* Light placeholders (other language's value) for untranslated verb names / tenses */
+  .verb-name-input::placeholder,
+  .tense-input::placeholder {
+    color: #bcc6d4; opacity: 1; font-weight: 500; font-style: italic;
   }
-  .remove-verb:hover { background: #fee2e2; color: var(--incorrect); border-color: #fecaca; }
 
   .conj-table-wrap {
     overflow: auto;
@@ -253,17 +306,17 @@
   }
   .conj-table tr > :last-child { border-right: 0; }
   .conj-table tbody tr:last-child > * { border-bottom: 0; }
-  /* sticky column headings */
   .conj-table thead th { position: sticky; top: 0; z-index: 2; background: #eaf0f8; }
-  /* sticky row headings (pronouns) */
   .conj-table tbody th {
     position: sticky; left: 0; z-index: 1;
     background: #f3f6fb; text-align: left; padding: 0 14px;
     font-weight: 700; white-space: nowrap; min-width: 110px;
+    user-select: none; -webkit-user-select: none; cursor: default;
   }
   .conj-table thead th.corner {
     left: 0; z-index: 3; padding: 0 14px; text-align: left;
     font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted);
+    user-select: none; -webkit-user-select: none; cursor: default;
   }
   .conj-table thead th.no-tenses {
     padding: 10px 14px; font-weight: 500; color: var(--muted); font-size: .9rem; text-align: left;
@@ -291,6 +344,82 @@
     border: 2px dashed var(--border); border-radius: 14px;
   }
 
+  input.peeking {
+    background: #fff7e0 !important; color: #92400e;
+    outline: 2px solid var(--peek) !important; outline-offset: -2px;
+    border-color: transparent !important; cursor: default;
+  }
+  input.peeking::placeholder { color: #d9a94e; opacity: 1; font-style: italic; font-weight: 500; }
+  .conj-table th.peeking {
+    background: #fff7e0; color: #92400e;
+    box-shadow: inset 0 0 0 2px var(--peek);
+  }
+  .peek-badge {
+    position: fixed; z-index: 100; pointer-events: none;
+    background: var(--peek); color: #fff;
+    font-size: .65rem; font-weight: 800; letter-spacing: .05em;
+    padding: 2px 6px; border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+  }
+
+  /* ============ NOTES ============ */
+  .notes-layout {
+    display: grid; grid-template-columns: 260px 1fr; gap: 20px; align-items: start;
+  }
+  .notes-sidebar {
+    display: flex; flex-direction: column; gap: 10px;
+    position: sticky; top: 12px;
+  }
+  .notes-search {
+    width: 100%; padding: 8px 12px; border: 2px solid var(--border);
+    border-radius: 10px; font: inherit; font-size: .95rem;
+  }
+  .notes-search:focus { outline: none; border-color: var(--accent); }
+  .notes-list {
+    list-style: none; margin: 0; padding: 0;
+    display: flex; flex-direction: column; gap: 6px;
+    max-height: calc(100vh - 260px); overflow: auto;
+  }
+  .note-item {
+    width: 100%; text-align: left; cursor: pointer; font: inherit; color: var(--text);
+    background: #fafbfd; border: 1px solid var(--border); border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .note-item:hover { background: #f1f5fb; }
+  .note-item.active { border-color: var(--accent); background: #eff5ff; }
+  .note-item-title {
+    font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .note-item-title .untitled { color: var(--muted); font-weight: 500; font-style: italic; }
+  .note-item-preview {
+    font-size: .85rem; color: var(--muted); margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .note-item-date { font-size: .75rem; color: #94a3b8; margin-top: 4px; }
+  .notes-none { color: var(--muted); font-size: .9rem; padding: 8px 4px; }
+  .notes-editor { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .notes-editor-head { display: flex; align-items: center; gap: 10px; }
+  .note-title-input {
+    flex: 1; min-width: 0; font: inherit; font-size: 1.3rem; font-weight: 700;
+    color: var(--text); padding: 8px 12px; border-radius: 10px;
+    border: 2px solid transparent; background: transparent;
+  }
+  .note-title-input:hover { border-color: var(--border); }
+  .note-title-input:focus { outline: none; border-color: var(--accent); background: #fff; }
+  .note-saved { font-size: .8rem; color: var(--muted); white-space: nowrap; }
+  .note-body {
+    width: 100%; min-height: 360px; height: calc(100vh - 280px); resize: vertical;
+    padding: 16px 18px; border: 2px solid var(--border); border-radius: 12px;
+    font: inherit; font-size: 1rem; line-height: 1.6; color: var(--text); background: #fff;
+  }
+  .note-body:focus { outline: none; border-color: var(--accent); }
+
+  @media (max-width: 760px) {
+    .notes-layout { grid-template-columns: 1fr; }
+    .notes-sidebar { position: static; }
+    .notes-list { max-height: 220px; }
+  }
+
   @media (max-width: 600px) {
     .conj-toolbar { margin: 0 -20px 18px; padding: 10px 20px; }
     .conj-table tbody th, .conj-table thead th.corner { min-width: 84px; padding: 0 10px; }
@@ -302,31 +431,52 @@
 <body>
 <div class="container">
   <div class="card">
-    <!-- HOME / SET SELECTION -->
+    <!-- HOME -->
     <section id="home">
       <h1>French Vocabulary Quiz</h1>
       <p class="subtitle">Test your intermediate French vocabulary</p>
       <div class="nav-tabs">
         <button class="nav-tab active" data-tab="play">Play</button>
-        <button class="nav-tab" data-tab="manage">Word Sets</button>
         <button class="nav-tab" data-tab="conjugations">Conjugations</button>
+        <button class="nav-tab" data-tab="notes">Notes</button>
       </div>
 
+      <!-- PLAY TAB -->
       <div id="tab-play">
-        <h2>Choose a word set</h2>
-        <ul id="setSelectList" class="set-list"></ul>
-        <button id="startQuizBtn" class="primary hidden">Start Quiz (5 random questions)</button>
+        <!-- Choose a set and play -->
+        <div id="playMain">
+          <div class="play-head">
+            <h2>Choose a word set</h2>
+            <button type="button" id="manageSetsBtn" class="secondary small">✏️ Edit word sets</button>
+          </div>
+          <ul id="setSelectList" class="set-list"></ul>
+          <div id="startRow" class="start-row hidden">
+            <label for="roundLength">Questions per round</label>
+            <input type="number" id="roundLength" class="round-input" min="1" step="1" value="5">
+            <span id="roundMax" class="round-max"></span>
+            <button type="button" id="roundAllBtn" class="secondary small">All</button>
+            <button id="startQuizBtn" class="primary">Start Quiz</button>
+          </div>
+        </div>
+
+        <!-- Pick a set to edit -->
+        <div id="playManage" class="hidden">
+          <div class="play-head">
+            <h2>Edit word sets</h2>
+            <button type="button" id="backToPlayBtn" class="secondary small">← Back</button>
+          </div>
+          <ul id="manageSetList" class="set-list"></ul>
+          <button id="createSetBtn" class="primary">+ Create New Word Set</button>
+        </div>
       </div>
 
-      <div id="tab-manage" class="hidden">
-        <h2>Your Word Sets</h2>
-        <ul id="manageSetList" class="set-list"></ul>
-        <button id="createSetBtn" class="primary">+ Create New Word Set</button>
-      </div>
-
+      <!-- CONJUGATIONS TAB -->
       <div id="tab-conjugations" class="hidden">
         <h2>Verb Conjugations</h2>
-        <p class="conj-hint">Add a verb, name your tense columns and fill in the tables. Column headings are shared by every verb. Press Enter to move down a column.</p>
+        <p class="conj-hint">
+          Add a verb, name your tense columns and fill in the tables. Column headings are shared by every verb.
+          Press Enter to move down a column. <strong>Press and hold</strong> any cell to peek at it in the other language.
+        </p>
 
         <div class="conj-toolbar">
           <div class="lang-toggle" role="group" aria-label="Display language">
@@ -344,6 +494,25 @@
         </div>
 
         <div id="conjVerbs"></div>
+      </div>
+
+      <!-- NOTES TAB -->
+      <div id="tab-notes" class="hidden">
+        <div class="notes-layout">
+          <aside class="notes-sidebar">
+            <button type="button" id="newNoteBtn" class="primary small">+ New note</button>
+            <input type="search" id="notesSearch" class="notes-search" placeholder="Search notes…">
+            <ul id="notesList" class="notes-list"></ul>
+          </aside>
+          <div class="notes-editor">
+            <div class="notes-editor-head">
+              <input type="text" id="noteTitle" class="note-title-input" placeholder="Untitled note">
+              <span id="noteSaved" class="note-saved"></span>
+              <button type="button" id="deleteNoteBtn" class="btn-delete">Delete</button>
+            </div>
+            <textarea id="noteBody" class="note-body" placeholder="Write anything…"></textarea>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -378,9 +547,9 @@
         <button id="audioBtn" class="audio-btn" title="Listen to pronunciation">🔊</button>
       </div>
       <div id="options" class="options"></div>
-      <div id="feedback" class="feedback" aria-live="polite"></div>
       <div id="explanation" class="explanation"></div>
-      <div class="actions">
+      <div class="quiz-footer">
+        <div id="feedback" class="feedback" aria-live="polite"></div>
         <button id="nextBtn" class="primary hidden">Next question</button>
       </div>
     </section>
@@ -398,6 +567,9 @@
     </section>
   </div>
 </div>
+
+<!-- Small floating label shown while peeking at the other language -->
+<div id="peekBadge" class="peek-badge hidden"></div>
 
 <script>
 // ============ DISTRACTOR POOL ============
@@ -512,174 +684,85 @@ function detectType(correctText) {
 }
 
 function answersOverlap(a, b) {
+  const splitAnswers = str =>
+    str
+      .toLowerCase()
+      .split(/[\/;,]/)
+      .map(s => s.trim())
+      .filter(Boolean);
 
-    const splitAnswers = str =>
-        str
-            .toLowerCase()
-            .split(/[\/;,]/)
-            .map(s => s.trim())
-            .filter(Boolean);
+  const setA = new Set(splitAnswers(a));
+  const setB = new Set(splitAnswers(b));
 
-    const setA = new Set(splitAnswers(a));
-    const setB = new Set(splitAnswers(b));
-
-    for (const answer of setA) {
-        if (setB.has(answer)) return true;
-    }
-
-    return false;
+  for (const answer of setA) {
+    if (setB.has(answer)) return true;
+  }
+  return false;
 }
 
 function autoGenerateDistractors(frenchWord, correctText, currentSetWords = []) {
-
   const type = detectType(correctText);
 
-  const correctLower = correctText.toLowerCase();
-
-
-
   // Build distractors from the current word set
-
   const setPool = currentSetWords
-
     .filter(w =>
-
       w.correct &&
-
       !answersOverlap(w.correct, correctText) &&
-
       (!frenchWord || w.french.toLowerCase() !== frenchWord.toLowerCase())
-
     )
-
     .map(w => ({
-
       en: w.correct,
-
       fr: w.french,
-
       type: detectType(w.correct)
-
     }));
 
-
-
   // Same grammar type from current set
-
   let candidates = setPool.filter(w => w.type === type);
 
-
-
   // Then same type from built-in pool
-
   if (candidates.length < 3) {
-
     candidates.push(
-
       ...DISTRACTOR_POOL.filter(d =>
-
         d.type === type &&
-
         !answersOverlap(d.en, correctText) &&
-
         !candidates.some(c => c.en === d.en)
-
       )
-
     );
-
   }
-
-
 
   // Then anything else from current set
-
   if (candidates.length < 3) {
-
     candidates.push(
-
       ...setPool.filter(w =>
-
         !candidates.some(c => c.en === w.en)
-
       )
-
     );
-
   }
-
-
 
   // Finally anything else from built-in pool
-
   if (candidates.length < 3) {
-
     candidates.push(
-
       ...DISTRACTOR_POOL.filter(d =>
-
         !answersOverlap(d.en, correctText) &&
-
         !candidates.some(c => c.en === d.en)
-
       )
-
     );
-
   }
-
-
 
   // Shuffle and pick three
-
   const shuffled = candidates.sort(() => Math.random() - 0.5);
-
-
-
   const chosen = [];
 
-
-
   for (const candidate of shuffled) {
-
-
-
-      if (chosen.some(c => answersOverlap(c.en, candidate.en))) {
-
-          continue;
-
-      }
-
-
-
-      chosen.push(candidate);
-
-
-
-      if (chosen.length === 3) break;
-
+    if (chosen.some(c => answersOverlap(c.en, candidate.en))) continue;
+    chosen.push(candidate);
+    if (chosen.length === 3) break;
   }
 
-
-
   return chosen.map(p => ({
-
-      text: p.en,
-
-      note: `This would be « ${p.fr} ».`
-
-  }));
-
-
-
-  return shuffled.map(p => ({
-
     text: p.en,
-
     note: `This would be « ${p.fr} ».`
-
   }));
-
 }
 
 // ============ DEFAULT WORD SET ============
@@ -721,6 +804,8 @@ let answered = false;
 let results = [];
 let editingSetId = null;
 
+const ROUND_LENGTH_KEY = "frenchQuizRoundLength";
+
 // ============ STORAGE ============
 function loadSets() {
   const stored = localStorage.getItem("frenchQuizSets");
@@ -740,13 +825,23 @@ function saveSets() {
 }
 
 // ============ DOM REFS ============
+const containerEl = document.querySelector(".container");
 const homeEl = document.getElementById("home");
 const editorEl = document.getElementById("editor");
 const quizEl = document.getElementById("quiz");
 const resultEl = document.getElementById("result");
 
+const playMainEl = document.getElementById("playMain");
+const playManageEl = document.getElementById("playManage");
+const manageSetsBtn = document.getElementById("manageSetsBtn");
+const backToPlayBtn = document.getElementById("backToPlayBtn");
+
 const setSelectList = document.getElementById("setSelectList");
 const manageSetList = document.getElementById("manageSetList");
+const startRowEl = document.getElementById("startRow");
+const roundLengthInput = document.getElementById("roundLength");
+const roundMaxEl = document.getElementById("roundMax");
+const roundAllBtn = document.getElementById("roundAllBtn");
 const startQuizBtn = document.getElementById("startQuizBtn");
 const createSetBtn = document.getElementById("createSetBtn");
 
@@ -776,7 +871,8 @@ const homeBtn = document.getElementById("homeBtn");
 const generateAllBtn = document.getElementById("generateAllBtn");
 
 // ============ TABS ============
-const TAB_IDS = ["play", "manage", "conjugations"];
+const TAB_IDS = ["play", "conjugations", "notes"];
+const WIDE_TABS = ["conjugations", "notes"];
 
 document.querySelectorAll(".nav-tab").forEach(tab => {
   tab.addEventListener("click", () => {
@@ -786,12 +882,14 @@ document.querySelectorAll(".nav-tab").forEach(tab => {
     TAB_IDS.forEach(id =>
       document.getElementById("tab-" + id).classList.toggle("hidden", target !== id)
     );
-    if (target === "manage") renderManageList();
+    // Expand the card for the Conjugations and Notes tabs
+    containerEl.classList.toggle("wide", WIDE_TABS.includes(target));
     if (target === "conjugations") renderConjugations();
+    if (target === "notes") renderNotes();
   });
 });
 
-// ============ HOME / SET SELECTION ============
+// ============ PLAY: SET SELECTION ============
 function renderSetSelectList() {
   setSelectList.innerHTML = wordSets.map(s => `
     <li>
@@ -804,17 +902,87 @@ function renderSetSelectList() {
       </div>
     </li>
   `).join("");
-  startQuizBtn.classList.add("hidden");
+  startRowEl.classList.add("hidden");
+
+  // Keep the previous selection if that set still exists
+  if (selectedSetId && wordSets.some(s => s.id === selectedSetId)) {
+    selectSet(selectedSetId);
+  } else {
+    selectedSetId = null;
+  }
 }
 
 function selectSet(id) {
-  selectedSetId = id;
-  setSelectList.querySelectorAll("li").forEach(li => li.style.outline = "none");
-  const items = setSelectList.querySelectorAll("li");
   const idx = wordSets.findIndex(s => s.id === id);
-  if (idx >= 0 && items[idx]) items[idx].style.outline = "2px solid var(--accent)";
-  startQuizBtn.classList.remove("hidden");
+  if (idx < 0) return;
+  selectedSetId = id;
+  setSelectList.querySelectorAll("li").forEach((li, i) => {
+    li.style.outline = i === idx ? "2px solid var(--accent)" : "none";
+  });
+  startRowEl.classList.remove("hidden");
+  updateStartButton();
 }
+
+// ---- Custom round length ----
+function getSelectedSet() {
+  return wordSets.find(s => s.id === selectedSetId);
+}
+
+function effectiveRoundLength() {
+  const set = getSelectedSet();
+  if (!set) return 0;
+  const n = parseInt(roundLengthInput.value, 10);
+  return Math.max(1, Math.min(isNaN(n) ? 5 : n, set.words.length));
+}
+
+function updateStartButton() {
+  const set = getSelectedSet();
+  if (!set) return;
+  roundLengthInput.max = set.words.length;
+  roundMaxEl.textContent = `of ${set.words.length}`;
+  const n = effectiveRoundLength();
+  startQuizBtn.textContent = `Start Quiz (${n} question${n === 1 ? "" : "s"})`;
+}
+
+roundLengthInput.value = parseInt(localStorage.getItem(ROUND_LENGTH_KEY), 10) || 5;
+
+roundLengthInput.addEventListener("input", () => {
+  const n = parseInt(roundLengthInput.value, 10);
+  if (n > 0) localStorage.setItem(ROUND_LENGTH_KEY, n);
+  updateStartButton();
+});
+
+roundLengthInput.addEventListener("change", () => {
+  if (!getSelectedSet()) return;
+  roundLengthInput.value = effectiveRoundLength();
+  localStorage.setItem(ROUND_LENGTH_KEY, roundLengthInput.value);
+  updateStartButton();
+});
+
+roundLengthInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") startQuizBtn.click();
+});
+
+roundAllBtn.addEventListener("click", () => {
+  const set = getSelectedSet();
+  if (!set) return;
+  roundLengthInput.value = set.words.length;
+  localStorage.setItem(ROUND_LENGTH_KEY, set.words.length);
+  updateStartButton();
+});
+
+// ---- "Edit word sets" view inside the Play tab ----
+manageSetsBtn.addEventListener("click", () => {
+  playMainEl.classList.add("hidden");
+  playManageEl.classList.remove("hidden");
+  renderManageList();
+});
+
+backToPlayBtn.addEventListener("click", () => {
+  playManageEl.classList.add("hidden");
+  playMainEl.classList.remove("hidden");
+  renderSetSelectList();
+});
 
 function renderManageList() {
   manageSetList.innerHTML = wordSets.map(s => `
@@ -836,57 +1004,38 @@ createSetBtn.addEventListener("click", () => openEditor(null));
 generateAllBtn.addEventListener("click", generateAllDistractors);
 
 function generateAllDistractors() {
+  if (!confirm("Generate distractors for every word? Existing distractors will be replaced.")) {
+    return;
+  }
 
-    if (!confirm(
-        "Generate distractors for every word? Existing distractors will be replaced."
-    )) {
-        return;
+  const entries = Array.from(wordEntriesEl.querySelectorAll(".word-entry"));
+  if (!entries.length) return;
+
+  // Build the current word list once
+  const currentWords = entries.map(entry => ({
+    french: entry.querySelector(".we-french").value.trim(),
+    correct: entry.querySelector(".we-correct").value.trim()
+  }));
+
+  entries.forEach(entry => {
+    const french = entry.querySelector(".we-french").value.trim();
+    const correct = entry.querySelector(".we-correct").value.trim();
+    if (!french || !correct) return;
+
+    const generated = autoGenerateDistractors(french, correct, currentWords);
+
+    entry.querySelector(".we-d1").value = `${generated[0].text} | ${generated[0].note}`;
+    entry.querySelector(".we-d2").value = `${generated[1].text} | ${generated[1].note}`;
+    entry.querySelector(".we-d3").value = `${generated[2].text} | ${generated[2].note}`;
+
+    // Fill the note if it's empty
+    const noteInput = entry.querySelector(".we-correctnote");
+    if (!noteInput.value.trim()) {
+      noteInput.value = `« ${french} » means ${correct}.`;
     }
+  });
 
-    const entries = Array.from(
-        wordEntriesEl.querySelectorAll(".word-entry")
-    );
-
-    if (!entries.length) return;
-
-    // Build the current word list once
-    const currentWords = entries.map(entry => ({
-        french: entry.querySelector(".we-french").value.trim(),
-        correct: entry.querySelector(".we-correct").value.trim()
-    }));
-
-    entries.forEach(entry => {
-
-        const french = entry.querySelector(".we-french").value.trim();
-        const correct = entry.querySelector(".we-correct").value.trim();
-
-        if (!french || !correct) return;
-
-        const generated = autoGenerateDistractors(
-            french,
-            correct,
-            currentWords
-        );
-
-        entry.querySelector(".we-d1").value =
-            `${generated[0].text} | ${generated[0].note}`;
-
-        entry.querySelector(".we-d2").value =
-            `${generated[1].text} | ${generated[1].note}`;
-
-        entry.querySelector(".we-d3").value =
-            `${generated[2].text} | ${generated[2].note}`;
-
-        // Fill the note if it's empty
-        const noteInput = entry.querySelector(".we-correctnote");
-
-        if (!noteInput.value.trim()) {
-            noteInput.value = `« ${french} » means ${correct}.`;
-        }
-
-    });
-
-    alert("Distractors generated for all words.");
+  alert("Distractors generated for all words.");
 }
 
 function openEditor(setId) {
@@ -905,6 +1054,7 @@ function openEditor(setId) {
     setNameInput.value = "";
     addWordEntry();
   }
+  window.scrollTo(0, 0);
 }
 
 function editSet(id) { openEditor(id); }
@@ -912,6 +1062,7 @@ function editSet(id) { openEditor(id); }
 function deleteSet(id) {
   if (!confirm("Delete this word set?")) return;
   wordSets = wordSets.filter(s => s.id !== id);
+  if (selectedSetId === id) selectedSetId = null;
   saveSets();
   renderManageList();
 }
@@ -1046,11 +1197,10 @@ function closeEditor() {
 
 // ============ QUIZ LOGIC ============
 startQuizBtn.addEventListener("click", () => {
-  if (!selectedSetId) return;
-  const set = wordSets.find(s => s.id === selectedSetId);
+  const set = getSelectedSet();
   if (!set || set.words.length < 1) return;
 
-  const count = Math.min(5, set.words.length);
+  const count = effectiveRoundLength();
   const shuffled = [...set.words].sort(() => Math.random() - 0.5);
   quizQuestions = shuffled.slice(0, count).map(w => buildQuestion(w));
 
@@ -1059,7 +1209,7 @@ startQuizBtn.addEventListener("click", () => {
   results = [];
   answered = false;
 
-  quizSetName.textContent = `${set.name} · ${count} questions`;
+  quizSetName.textContent = `${set.name} · ${count} question${count === 1 ? "" : "s"}`;
   homeEl.classList.add("hidden");
   quizEl.classList.remove("hidden");
   resultEl.classList.add("hidden");
@@ -1092,8 +1242,8 @@ function renderQuestion() {
   scoreLabelEl.textContent = `Score: ${score}`;
   progressEl.style.width = `${((current + 1) / quizQuestions.length) * 100}%`;
   questionEl.textContent = item.question;
-  feedbackEl.textContent = "";
-  feedbackEl.className = "feedback";
+  feedbackEl.textContent = `Choose an answer (or press 1–${item.options.length})`;
+  feedbackEl.className = "feedback hint";
   explanationEl.textContent = "";
   nextBtn.classList.add("hidden");
   optionsEl.innerHTML = "";
@@ -1101,10 +1251,17 @@ function renderQuestion() {
   item.options.forEach((option, index) => {
     const button = document.createElement("button");
     button.className = "option";
-    button.textContent = option;
+    const key = document.createElement("span");
+    key.className = "option-key";
+    key.textContent = index + 1;
+    button.appendChild(key);
+    button.appendChild(document.createTextNode(option));
     button.addEventListener("click", () => chooseAnswer(index, button));
     optionsEl.appendChild(button);
   });
+
+  // Always start each question at the top, so no scrolling back up is needed
+  window.scrollTo(0, 0);
 }
 
 function chooseAnswer(index, selectedButton) {
@@ -1146,16 +1303,33 @@ function chooseAnswer(index, selectedButton) {
   });
 
   scoreLabelEl.textContent = `Score: ${score}`;
-  nextBtn.textContent = current === quizQuestions.length - 1 ? "See results" : "Next question";
+  nextBtn.textContent = current === quizQuestions.length - 1 ? "See results →" : "Next question →";
   nextBtn.classList.remove("hidden");
+  nextBtn.focus({ preventScroll: true });
 }
 
 nextBtn.addEventListener("click", () => {
+  if (!answered) return;
   if (current < quizQuestions.length - 1) {
     current++;
     renderQuestion();
   } else {
     showResults();
+  }
+});
+
+// Keyboard: 1–4 to answer, Enter / → for next question
+document.addEventListener("keydown", e => {
+  if (quizEl.classList.contains("hidden")) return;
+  if (e.target.matches("input, textarea")) return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+  if (!answered && /^[1-9]$/.test(e.key)) {
+    const btn = optionsEl.querySelectorAll(".option")[Number(e.key) - 1];
+    if (btn) { e.preventDefault(); btn.click(); }
+  } else if (answered && (e.key === "Enter" || e.key === "ArrowRight")) {
+    e.preventDefault();
+    nextBtn.click();
   }
 });
 
@@ -1181,6 +1355,7 @@ audioBtn.addEventListener("click", () => {
 function showResults() {
   quizEl.classList.add("hidden");
   resultEl.classList.remove("hidden");
+  window.scrollTo(0, 0);
   const total = quizQuestions.length;
   const percentage = Math.round((score / total) * 100);
   finalScoreEl.textContent = `${score} / ${total}`;
@@ -1229,7 +1404,6 @@ restartBtn.addEventListener("click", () => {
   resultEl.classList.add("hidden");
   homeEl.classList.remove("hidden");
   renderSetSelectList();
-  if (selectedSetId) selectSet(selectedSetId);
 });
 
 homeBtn.addEventListener("click", () => {
@@ -1237,14 +1411,6 @@ homeBtn.addEventListener("click", () => {
   homeEl.classList.remove("hidden");
   renderSetSelectList();
 });
-
-// ============ UTILS ============
-function escapeHtml(value) {
-  if (!value) return "";
-  return value.replace(/[&<>"']/g, char => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
-  }[char]));
-}
 
 // ============ CONJUGATIONS ============
 const CONJ_STORAGE_KEY = "frenchConjugations";
@@ -1262,8 +1428,8 @@ const PRONOUNS = [
 ];
 
 const CONJ_TEXT = {
-  fr: { corner: "Sujet",   verbPh: "Verbe (infinitif)…",  tensePh: "Temps…" },
-  en: { corner: "Subject", verbPh: "Verb (infinitive)…",  tensePh: "Tense…" }
+  fr: { corner: "Sujet",   verbPh: "Verbe (infinitif)…", tensePh: "Temps…", emptyPeek: "(pas encore de français)" },
+  en: { corner: "Subject", verbPh: "Verb (infinitive)…", tensePh: "Tense…", emptyPeek: "(no English yet)" }
 };
 
 // Data shape:
@@ -1274,6 +1440,7 @@ const conjVerbsEl = document.getElementById("conjVerbs");
 const langToggle = document.getElementById("langToggle");
 const addVerbBtn = document.getElementById("addVerbBtn");
 const addTenseBtn = document.getElementById("addTenseBtn");
+const peekBadge = document.getElementById("peekBadge");
 
 function conjId(prefix) {
   return prefix + "_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -1282,6 +1449,7 @@ function newTense() { return { id: conjId("t"), fr: "", en: "" }; }
 function newVerb()  { return { id: conjId("v"), fr: "", en: "", cells: {} }; }
 function findVerb(id)  { return conj.verbs.find(v => v.id === id); }
 function findTense(id) { return conj.tenses.find(t => t.id === id); }
+function conjOtherLang() { return conj.lang === "fr" ? "en" : "fr"; }
 
 function loadConjugations() {
   let data = null;
@@ -1299,7 +1467,16 @@ function saveConjugations() {
   localStorage.setItem(CONJ_STORAGE_KEY, JSON.stringify(conj));
 }
 
+// Placeholder for a verb name / tense heading not yet entered in the current
+// language: the value from the other language (shown in light grey).
+function otherLangPlaceholder(item, lang, fallback) {
+  const other = lang === "fr" ? "en" : "fr";
+  return item[other] || fallback;
+}
+
 function renderConjugations() {
+  endPeek();
+
   const lang = conj.lang;
   const txt = CONJ_TEXT[lang];
 
@@ -1323,8 +1500,9 @@ function renderConjugations() {
     <div class="verb-block" data-verb="${v.id}">
       <div class="verb-head">
         <input type="text" class="verb-name-input" data-verb="${v.id}" lang="${lang}"
-               placeholder="${escapeHtml(txt.verbPh)}" value="${escapeHtml(v[lang])}">
-        <button type="button" class="remove-verb" data-verb="${v.id}" title="Delete this verb">Delete</button>
+               placeholder="${escapeHtml(otherLangPlaceholder(v, lang, txt.verbPh))}"
+               value="${escapeHtml(v[lang])}">
+        <button type="button" class="btn-delete remove-verb" data-verb="${v.id}" title="Delete this verb">Delete</button>
       </div>
       <div class="conj-table-wrap" data-verb="${v.id}">
         <table class="conj-table">
@@ -1335,7 +1513,8 @@ function renderConjugations() {
                 <th scope="col">
                   <div class="tense-cell">
                     <input type="text" class="tense-input" data-tense="${t.id}" lang="${lang}"
-                           placeholder="${escapeHtml(txt.tensePh)}" value="${escapeHtml(t[lang])}">
+                           placeholder="${escapeHtml(otherLangPlaceholder(t, lang, txt.tensePh))}"
+                           value="${escapeHtml(t[lang])}">
                     <button type="button" class="remove-tense" data-tense="${t.id}" title="Remove this column from all verbs">×</button>
                   </div>
                 </th>`).join("")
@@ -1345,7 +1524,7 @@ function renderConjugations() {
           <tbody>
             ${PRONOUNS.map((p, r) => `
               <tr>
-                <th scope="row">${p[lang]}</th>
+                <th scope="row" data-pronoun="${p.key}">${p[lang]}</th>
                 ${conj.tenses.length ? conj.tenses.map((t, c) => {
                   const cell = v.cells[t.id + ":" + p.key];
                   return `<td><input type="text" class="cell-input" lang="${lang}"
@@ -1454,7 +1633,7 @@ function removeTense(id) {
   );
   const name = t[conj.lang] || t.fr || t.en;
   if (hasData && !confirm(
-    `Remove the column ${name ? "“" + name + "”" : ""} from every verb? All entries in it will be deleted.`
+    `Remove the column ${name ? "“" + name + "” " : ""}from every verb? All entries in it will be deleted.`
   )) return;
 
   conj.tenses = conj.tenses.filter(x => x.id !== id);
@@ -1470,7 +1649,7 @@ function removeVerb(id) {
   if (!v) return;
   const hasData = v.fr || v.en || Object.values(v.cells).some(c => c.fr || c.en);
   const name = v[conj.lang] || v.fr || v.en;
-  if (hasData && !confirm(`Delete the verb ${name ? "“" + name + "”" : ""} and its table?`)) return;
+  if (hasData && !confirm(`Delete the verb ${name ? "“" + name + "” " : ""}and its table?`)) return;
   conj.verbs = conj.verbs.filter(x => x.id !== id);
   saveConjugations();
   renderConjugations();
@@ -1505,10 +1684,267 @@ conjVerbsEl.addEventListener("keydown", e => {
   }
 });
 
+// ---- Hold to peek: press and hold a cell to see it in the other language ----
+const PEEK_DELAY = 300;          // ms the press must be held before the peek starts
+const PEEK_MOVE_TOLERANCE = 6;   // px of movement allowed before the hold is treated as a drag
+const PEEK_SELECTOR = ".cell-input, .tense-input, .verb-name-input, th[data-pronoun], th.corner";
+let peek = null;                 // { el, x, y, timer, active, selStart, selEnd, placeholder }
+
+// Stored text of any peekable element in the given language
+function conjElementText(el, lang) {
+  if (el.classList.contains("verb-name-input")) {
+    const v = findVerb(el.dataset.verb);
+    return (v && v[lang]) || "";
+  }
+  if (el.classList.contains("tense-input")) {
+    const t = findTense(el.dataset.tense);
+    return (t && t[lang]) || "";
+  }
+  if (el.classList.contains("cell-input")) {
+    const v = findVerb(el.dataset.verb);
+    const c = v && v.cells[el.dataset.key];
+    return (c && c[lang]) || "";
+  }
+  if (el.dataset.pronoun) {
+    const p = PRONOUNS.find(x => x.key === el.dataset.pronoun);
+    return p ? p[lang] : "";
+  }
+  if (el.classList.contains("corner")) return CONJ_TEXT[lang].corner;
+  return "";
+}
+
+function positionPeekBadge() {
+  if (!peek || !peek.active) return;
+  const r = peek.el.getBoundingClientRect();
+  peekBadge.style.top = Math.max(2, r.top - 9) + "px";
+  peekBadge.style.left = Math.max(2, r.right - 30) + "px";
+}
+
+function beginPeek() {
+  if (!peek) return;
+  if (!peek.el.isConnected) { peek = null; return; }
+
+  const el = peek.el;
+  const other = conjOtherLang();
+  peek.active = true;
+
+  if (el.tagName === "INPUT") {
+    peek.selStart = el.selectionStart;
+    peek.selEnd = el.selectionEnd;
+    peek.placeholder = el.placeholder;
+    el.readOnly = true;                         // nothing can be typed into the peeked value
+    el.value = conjElementText(el, other);
+    el.placeholder = CONJ_TEXT[other].emptyPeek;
+    el.lang = other;
+  } else {
+    el.textContent = conjElementText(el, other);
+  }
+
+  el.classList.add("peeking");
+  peekBadge.textContent = other.toUpperCase();
+  peekBadge.classList.remove("hidden");
+  positionPeekBadge();
+}
+
+function endPeek() {
+  if (!peek) return;
+  clearTimeout(peek.timer);
+
+  const el = peek.el;
+  if (peek.active && el.isConnected) {
+    if (el.tagName === "INPUT") {
+      el.value = conjElementText(el, conj.lang);
+      el.placeholder = peek.placeholder;
+      el.lang = conj.lang;
+      el.readOnly = false;
+      if (document.activeElement === el) {
+        try { el.setSelectionRange(peek.selStart, peek.selEnd); } catch (err) {}
+      }
+    } else {
+      el.textContent = conjElementText(el, conj.lang);
+    }
+    el.classList.remove("peeking");
+  }
+
+  peekBadge.classList.add("hidden");
+  peek = null;
+}
+
+conjVerbsEl.addEventListener("pointerdown", e => {
+  if (e.pointerType === "mouse" && e.button !== 0) return;   // left button only
+  const el = e.target.closest(PEEK_SELECTOR);
+  if (!el) return;
+  endPeek();
+  peek = {
+    el, x: e.clientX, y: e.clientY, active: false,
+    timer: setTimeout(beginPeek, PEEK_DELAY)
+  };
+});
+
+// Moving before the peek starts means the user is dragging/selecting text, not holding
+window.addEventListener("pointermove", e => {
+  if (peek && !peek.active &&
+      Math.hypot(e.clientX - peek.x, e.clientY - peek.y) > PEEK_MOVE_TOLERANCE) {
+    endPeek();
+  }
+});
+
+["pointerup", "pointercancel", "blur", "dragstart"].forEach(evt =>
+  window.addEventListener(evt, () => endPeek())
+);
+
+// Keep the badge attached if something scrolls during a peek
+window.addEventListener("scroll", positionPeekBadge, true);
+
+// Stop the long-press context menu on touch devices while holding a cell
+conjVerbsEl.addEventListener("contextmenu", e => { if (peek) e.preventDefault(); });
+
+// ============ NOTES ============
+const NOTES_STORAGE_KEY = "frenchNotes";
+
+// notesData = { notes: [{id, title, body, created, updated}], activeId }
+// activeId === null means a fresh blank page; a note is created on first keystroke.
+let notesData = { notes: [], activeId: null };
+
+const notesListEl = document.getElementById("notesList");
+const notesSearchInput = document.getElementById("notesSearch");
+const newNoteBtn = document.getElementById("newNoteBtn");
+const noteTitleInput = document.getElementById("noteTitle");
+const noteBodyInput = document.getElementById("noteBody");
+const noteSavedEl = document.getElementById("noteSaved");
+const deleteNoteBtn = document.getElementById("deleteNoteBtn");
+
+function loadNotes() {
+  try {
+    const data = JSON.parse(localStorage.getItem(NOTES_STORAGE_KEY));
+    if (data && Array.isArray(data.notes)) {
+      notesData = { notes: data.notes, activeId: data.activeId || null };
+    }
+  } catch (e) { /* ignore corrupt data */ }
+  if (notesData.activeId && !activeNote()) {
+    notesData.activeId = sortedNotes()[0] ? sortedNotes()[0].id : null;
+  }
+}
+
+function saveNotes() {
+  localStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(notesData));
+}
+
+function activeNote() {
+  return notesData.notes.find(n => n.id === notesData.activeId);
+}
+
+function sortedNotes() {
+  return [...notesData.notes].sort((a, b) => b.updated - a.updated);
+}
+
+function formatNoteDate(ts) {
+  return new Date(ts).toLocaleString([], { dateStyle: "medium", timeStyle: "short" });
+}
+
+function notePreview(body) {
+  const line = (body || "").split("\n").find(l => l.trim());
+  return line ? line.trim().slice(0, 90) : "";
+}
+
+function renderNotesList() {
+  const q = notesSearchInput.value.trim().toLowerCase();
+  const list = sortedNotes().filter(n =>
+    !q || n.title.toLowerCase().includes(q) || n.body.toLowerCase().includes(q)
+  );
+
+  notesListEl.innerHTML = list.length
+    ? list.map(n => `
+        <li>
+          <button type="button" class="note-item ${n.id === notesData.activeId ? "active" : ""}" data-id="${n.id}">
+            <div class="note-item-title">${escapeHtml(n.title) || '<span class="untitled">Untitled note</span>'}</div>
+            <div class="note-item-preview">${escapeHtml(notePreview(n.body)) || "&nbsp;"}</div>
+            <div class="note-item-date">${formatNoteDate(n.updated)}</div>
+          </button>
+        </li>`).join("")
+    : `<li class="notes-none">${q ? "No matching notes." : "No notes yet — just start typing."}</li>`;
+}
+
+function updateNoteMeta() {
+  const note = activeNote();
+  noteSavedEl.textContent = note ? `Saved · ${formatNoteDate(note.updated)}` : "New note";
+  deleteNoteBtn.classList.toggle("hidden", !note);
+}
+
+function renderNotes() {
+  const note = activeNote();
+  noteTitleInput.value = note ? note.title : "";
+  noteBodyInput.value = note ? note.body : "";
+  renderNotesList();
+  updateNoteMeta();
+}
+
+function onNoteInput() {
+  let note = activeNote();
+  if (!note) {
+    // First keystroke on a blank page creates the note
+    const now = Date.now();
+    note = { id: "n_" + now.toString(36) + Math.random().toString(36).slice(2, 6), title: "", body: "", created: now, updated: now };
+    notesData.notes.push(note);
+    notesData.activeId = note.id;
+  }
+  note.title = noteTitleInput.value;
+  note.body = noteBodyInput.value;
+  note.updated = Date.now();
+  saveNotes();
+  renderNotesList();
+  updateNoteMeta();
+}
+
+noteTitleInput.addEventListener("input", onNoteInput);
+noteBodyInput.addEventListener("input", onNoteInput);
+
+noteTitleInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") { e.preventDefault(); noteBodyInput.focus(); }
+});
+
+notesSearchInput.addEventListener("input", renderNotesList);
+
+newNoteBtn.addEventListener("click", () => {
+  notesData.activeId = null;
+  notesSearchInput.value = "";
+  saveNotes();
+  renderNotes();
+  noteTitleInput.focus();
+});
+
+notesListEl.addEventListener("click", e => {
+  const item = e.target.closest(".note-item");
+  if (!item) return;
+  notesData.activeId = item.dataset.id;
+  saveNotes();
+  renderNotes();
+});
+
+deleteNoteBtn.addEventListener("click", () => {
+  const note = activeNote();
+  if (!note) return;
+  if ((note.title || note.body) && !confirm(`Delete the note “${note.title || "Untitled note"}”?`)) return;
+  notesData.notes = notesData.notes.filter(n => n.id !== note.id);
+  const next = sortedNotes()[0];
+  notesData.activeId = next ? next.id : null;
+  saveNotes();
+  renderNotes();
+});
+
+// ============ UTILS ============
+function escapeHtml(value) {
+  if (!value) return "";
+  return value.replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+  }[char]));
+}
+
 // ============ INIT ============
 loadSets();
 renderSetSelectList();
 loadConjugations();
+loadNotes();
 </script>
 </body>
 </html>
