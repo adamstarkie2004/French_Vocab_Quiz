@@ -185,6 +185,118 @@
     h1 { font-size: 1.6rem; }
     .question-row { flex-wrap: wrap; }
   }
+    /* ============ CONJUGATIONS ============ */
+  .conj-hint { color: var(--muted); font-size: .92rem; margin: 0 0 8px; }
+  .conj-toolbar {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    margin: 0 -28px 18px; padding: 12px 28px;
+    background: rgba(255, 255, 255, .97);
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 8px 14px -12px rgba(15, 23, 42, .4);
+  }
+  .lang-toggle { display: flex; align-items: center; gap: 10px; }
+  .lang-option {
+    background: none; border: 0; padding: 4px 2px; cursor: pointer;
+    font-size: .95rem; font-weight: 650; color: var(--muted);
+  }
+  .lang-option.active { color: var(--accent); }
+  .switch { position: relative; display: inline-block; width: 52px; height: 28px; flex-shrink: 0; }
+  .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; inset: 0; cursor: pointer;
+    background: var(--accent); border-radius: 99px; transition: .2s;
+  }
+  .slider::before {
+    content: ""; position: absolute; width: 22px; height: 22px; left: 3px; top: 3px;
+    background: #fff; border-radius: 50%; transition: .2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+  }
+  .switch input:checked + .slider::before { transform: translateX(24px); }
+  .switch input:focus-visible + .slider { outline: 3px solid #93c5fd; outline-offset: 2px; }
+  .conj-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .primary.small, .secondary.small { padding: 8px 14px; font-size: .9rem; }
+
+  .verb-block {
+    border: 1px solid var(--border); border-radius: 14px;
+    background: #fafbfd; margin-bottom: 22px;
+  }
+  .verb-head { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+  .verb-name-input {
+    flex: 1; min-width: 0; font: inherit; font-size: 1.15rem; font-weight: 700;
+    color: var(--text); padding: 6px 10px; border-radius: 8px;
+    border: 2px solid transparent; background: transparent;
+  }
+  .verb-name-input:hover { border-color: var(--border); }
+  .verb-name-input:focus { outline: none; border-color: var(--accent); background: #fff; }
+  .remove-verb {
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 12px; cursor: pointer; color: var(--muted); font-size: .85rem;
+  }
+  .remove-verb:hover { background: #fee2e2; color: var(--incorrect); border-color: #fecaca; }
+
+  .conj-table-wrap {
+    overflow: auto;
+    max-height: calc(100vh - 170px);
+    background: #fff;
+    border-top: 1px solid var(--border);
+    border-radius: 0 0 14px 14px;
+    scroll-padding-left: 120px;
+    scroll-padding-top: 48px;
+  }
+  .conj-table { border-collapse: separate; border-spacing: 0; min-width: 100%; }
+  .conj-table th, .conj-table td {
+    padding: 0;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .conj-table tr > :last-child { border-right: 0; }
+  .conj-table tbody tr:last-child > * { border-bottom: 0; }
+  /* sticky column headings */
+  .conj-table thead th { position: sticky; top: 0; z-index: 2; background: #eaf0f8; }
+  /* sticky row headings (pronouns) */
+  .conj-table tbody th {
+    position: sticky; left: 0; z-index: 1;
+    background: #f3f6fb; text-align: left; padding: 0 14px;
+    font-weight: 700; white-space: nowrap; min-width: 110px;
+  }
+  .conj-table thead th.corner {
+    left: 0; z-index: 3; padding: 0 14px; text-align: left;
+    font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted);
+  }
+  .conj-table thead th.no-tenses {
+    padding: 10px 14px; font-weight: 500; color: var(--muted); font-size: .9rem; text-align: left;
+  }
+  .tense-cell { display: flex; align-items: center; }
+  .tense-input {
+    flex: 1; min-width: 150px; border: 0; background: transparent;
+    padding: 11px 4px 11px 12px; font: inherit; font-weight: 700; color: var(--text);
+  }
+  .remove-tense {
+    background: none; border: 0; cursor: pointer; color: var(--muted);
+    font-size: 1.1rem; padding: 4px 8px; opacity: .5;
+  }
+  .remove-tense:hover { opacity: 1; color: var(--incorrect); }
+  .cell-input {
+    display: block; width: 100%; min-width: 160px; border: 0; background: transparent;
+    padding: 10px 12px; font: inherit; color: var(--text);
+  }
+  .cell-input:focus, .tense-input:focus {
+    outline: 2px solid var(--accent); outline-offset: -2px; background: #f8fbff;
+  }
+  .conj-table tbody tr:hover td { background: #fafcff; }
+  .conj-empty {
+    text-align: center; color: var(--muted); padding: 30px 16px;
+    border: 2px dashed var(--border); border-radius: 14px;
+  }
+
+  @media (max-width: 600px) {
+    .conj-toolbar { margin: 0 -20px 18px; padding: 10px 20px; }
+    .conj-table tbody th, .conj-table thead th.corner { min-width: 84px; padding: 0 10px; }
+    .cell-input { min-width: 130px; }
+    .tense-input { min-width: 120px; }
+  }
 </style>
 </head>
 <body>
@@ -197,6 +309,7 @@
       <div class="nav-tabs">
         <button class="nav-tab active" data-tab="play">Play</button>
         <button class="nav-tab" data-tab="manage">Word Sets</button>
+        <button class="nav-tab" data-tab="conjugations">Conjugations</button>
       </div>
 
       <div id="tab-play">
@@ -209,6 +322,28 @@
         <h2>Your Word Sets</h2>
         <ul id="manageSetList" class="set-list"></ul>
         <button id="createSetBtn" class="primary">+ Create New Word Set</button>
+      </div>
+
+      <div id="tab-conjugations" class="hidden">
+        <h2>Verb Conjugations</h2>
+        <p class="conj-hint">Add a verb, name your tense columns and fill in the tables. Column headings are shared by every verb. Press Enter to move down a column.</p>
+
+        <div class="conj-toolbar">
+          <div class="lang-toggle" role="group" aria-label="Display language">
+            <button type="button" class="lang-option" data-lang="fr">Français</button>
+            <label class="switch" title="Switch between French and English">
+              <input type="checkbox" id="langToggle" role="switch" aria-label="Show English">
+              <span class="slider"></span>
+            </label>
+            <button type="button" class="lang-option" data-lang="en">English</button>
+          </div>
+          <div class="conj-actions">
+            <button type="button" id="addTenseBtn" class="secondary small">+ Add tense</button>
+            <button type="button" id="addVerbBtn" class="primary small">+ Add verb</button>
+          </div>
+        </div>
+
+        <div id="conjVerbs"></div>
       </div>
     </section>
 
@@ -641,14 +776,18 @@ const homeBtn = document.getElementById("homeBtn");
 const generateAllBtn = document.getElementById("generateAllBtn");
 
 // ============ TABS ============
+const TAB_IDS = ["play", "manage", "conjugations"];
+
 document.querySelectorAll(".nav-tab").forEach(tab => {
   tab.addEventListener("click", () => {
     document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
     tab.classList.add("active");
     const target = tab.dataset.tab;
-    document.getElementById("tab-play").classList.toggle("hidden", target !== "play");
-    document.getElementById("tab-manage").classList.toggle("hidden", target !== "manage");
+    TAB_IDS.forEach(id =>
+      document.getElementById("tab-" + id).classList.toggle("hidden", target !== id)
+    );
     if (target === "manage") renderManageList();
+    if (target === "conjugations") renderConjugations();
   });
 });
 
@@ -1107,9 +1246,269 @@ function escapeHtml(value) {
   }[char]));
 }
 
+// ============ CONJUGATIONS ============
+const CONJ_STORAGE_KEY = "frenchConjugations";
+
+const PRONOUNS = [
+  { key: "je",    fr: "Je",    en: "I" },
+  { key: "tu",    fr: "Tu",    en: "You" },
+  { key: "il",    fr: "Il",    en: "He" },
+  { key: "elle",  fr: "Elle",  en: "She" },
+  { key: "on",    fr: "On",    en: "One" },
+  { key: "nous",  fr: "Nous",  en: "We" },
+  { key: "vous",  fr: "Vous",  en: "You (pl.)" },
+  { key: "ils",   fr: "Ils",   en: "They (m.)" },
+  { key: "elles", fr: "Elles", en: "They (f.)" }
+];
+
+const CONJ_TEXT = {
+  fr: { corner: "Sujet",   verbPh: "Verbe (infinitif)…",  tensePh: "Temps…" },
+  en: { corner: "Subject", verbPh: "Verb (infinitive)…",  tensePh: "Tense…" }
+};
+
+// Data shape:
+// conj = { lang, tenses: [{id, fr, en}], verbs: [{id, fr, en, cells: {"tenseId:pronounKey": {fr, en}}}] }
+let conj = null;
+
+const conjVerbsEl = document.getElementById("conjVerbs");
+const langToggle = document.getElementById("langToggle");
+const addVerbBtn = document.getElementById("addVerbBtn");
+const addTenseBtn = document.getElementById("addTenseBtn");
+
+function conjId(prefix) {
+  return prefix + "_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+function newTense() { return { id: conjId("t"), fr: "", en: "" }; }
+function newVerb()  { return { id: conjId("v"), fr: "", en: "", cells: {} }; }
+function findVerb(id)  { return conj.verbs.find(v => v.id === id); }
+function findTense(id) { return conj.tenses.find(t => t.id === id); }
+
+function loadConjugations() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(CONJ_STORAGE_KEY)); } catch (e) { data = null; }
+  if (data && Array.isArray(data.tenses) && Array.isArray(data.verbs)) {
+    conj = { lang: data.lang === "en" ? "en" : "fr", tenses: data.tenses, verbs: data.verbs };
+  } else {
+    // Empty starting structure: 3 unnamed tense columns, 1 blank verb
+    conj = { lang: "fr", tenses: [newTense(), newTense(), newTense()], verbs: [newVerb()] };
+    saveConjugations();
+  }
+}
+
+function saveConjugations() {
+  localStorage.setItem(CONJ_STORAGE_KEY, JSON.stringify(conj));
+}
+
+function renderConjugations() {
+  const lang = conj.lang;
+  const txt = CONJ_TEXT[lang];
+
+  langToggle.checked = lang === "en";
+  document.querySelectorAll(".lang-option").forEach(b =>
+    b.classList.toggle("active", b.dataset.lang === lang)
+  );
+
+  // Remember each table's scroll position so re-rendering doesn't jump
+  const scrollPos = {};
+  conjVerbsEl.querySelectorAll(".conj-table-wrap").forEach(w => {
+    scrollPos[w.dataset.verb] = [w.scrollLeft, w.scrollTop];
+  });
+
+  if (!conj.verbs.length) {
+    conjVerbsEl.innerHTML = `<div class="conj-empty">No verbs yet. Click “+ Add verb” to create a conjugation table.</div>`;
+    return;
+  }
+
+  conjVerbsEl.innerHTML = conj.verbs.map(v => `
+    <div class="verb-block" data-verb="${v.id}">
+      <div class="verb-head">
+        <input type="text" class="verb-name-input" data-verb="${v.id}" lang="${lang}"
+               placeholder="${escapeHtml(txt.verbPh)}" value="${escapeHtml(v[lang])}">
+        <button type="button" class="remove-verb" data-verb="${v.id}" title="Delete this verb">Delete</button>
+      </div>
+      <div class="conj-table-wrap" data-verb="${v.id}">
+        <table class="conj-table">
+          <thead>
+            <tr>
+              <th class="corner" scope="col">${txt.corner}</th>
+              ${conj.tenses.length ? conj.tenses.map(t => `
+                <th scope="col">
+                  <div class="tense-cell">
+                    <input type="text" class="tense-input" data-tense="${t.id}" lang="${lang}"
+                           placeholder="${escapeHtml(txt.tensePh)}" value="${escapeHtml(t[lang])}">
+                    <button type="button" class="remove-tense" data-tense="${t.id}" title="Remove this column from all verbs">×</button>
+                  </div>
+                </th>`).join("")
+              : `<th class="no-tenses">Click “+ Add tense” to add a column</th>`}
+            </tr>
+          </thead>
+          <tbody>
+            ${PRONOUNS.map((p, r) => `
+              <tr>
+                <th scope="row">${p[lang]}</th>
+                ${conj.tenses.length ? conj.tenses.map((t, c) => {
+                  const cell = v.cells[t.id + ":" + p.key];
+                  return `<td><input type="text" class="cell-input" lang="${lang}"
+                            data-verb="${v.id}" data-key="${t.id}:${p.key}"
+                            data-row="${r}" data-col="${c}" aria-label="${p[lang]}"
+                            value="${escapeHtml(cell ? cell[lang] : "")}"></td>`;
+                }).join("") : `<td></td>`}
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `).join("");
+
+  conjVerbsEl.querySelectorAll(".conj-table-wrap").forEach(w => {
+    const pos = scrollPos[w.dataset.verb];
+    if (pos) { w.scrollLeft = pos[0]; w.scrollTop = pos[1]; }
+  });
+}
+
+function setConjLang(lang) {
+  conj.lang = lang;
+  saveConjugations();
+  renderConjugations();
+}
+
+// First verb block currently visible on screen (used when adding a column)
+function visibleVerbBlock() {
+  const toolbarBottom = document.querySelector(".conj-toolbar").getBoundingClientRect().bottom;
+  return [...conjVerbsEl.querySelectorAll(".verb-block")].find(b => {
+    const r = b.getBoundingClientRect();
+    return r.bottom > toolbarBottom + 40 && r.top < window.innerHeight;
+  });
+}
+
+// ---- Toolbar ----
+langToggle.addEventListener("change", () => setConjLang(langToggle.checked ? "en" : "fr"));
+document.querySelectorAll(".lang-option").forEach(b =>
+  b.addEventListener("click", () => setConjLang(b.dataset.lang))
+);
+
+addVerbBtn.addEventListener("click", () => {
+  const v = newVerb();
+  conj.verbs.push(v);
+  saveConjugations();
+  renderConjugations();
+  const block = conjVerbsEl.querySelector(`.verb-block[data-verb="${v.id}"]`);
+  block.scrollIntoView({ behavior: "smooth", block: "center" });
+  block.querySelector(".verb-name-input").focus({ preventScroll: true });
+});
+
+addTenseBtn.addEventListener("click", () => {
+  const t = newTense();
+  conj.tenses.push(t);
+  saveConjugations();
+  renderConjugations();
+  conjVerbsEl.querySelectorAll(".conj-table-wrap").forEach(w => { w.scrollLeft = w.scrollWidth; });
+  const block = visibleVerbBlock();
+  const input = block && block.querySelector(`.tense-input[data-tense="${t.id}"]`);
+  if (input) input.focus({ preventScroll: true });
+});
+
+// ---- Editing (event delegation) ----
+conjVerbsEl.addEventListener("input", e => {
+  const el = e.target;
+  const lang = conj.lang;
+
+  if (el.classList.contains("verb-name-input")) {
+    const v = findVerb(el.dataset.verb);
+    if (v) v[lang] = el.value;
+
+  } else if (el.classList.contains("tense-input")) {
+    const t = findTense(el.dataset.tense);
+    if (t) t[lang] = el.value;
+    // Shared heading: update the same column in every other verb table
+    conjVerbsEl.querySelectorAll(`.tense-input[data-tense="${el.dataset.tense}"]`).forEach(other => {
+      if (other !== el) other.value = el.value;
+    });
+
+  } else if (el.classList.contains("cell-input")) {
+    const v = findVerb(el.dataset.verb);
+    if (v) {
+      const key = el.dataset.key;
+      if (!v.cells[key]) v.cells[key] = { fr: "", en: "" };
+      v.cells[key][lang] = el.value;
+    }
+  } else {
+    return;
+  }
+  saveConjugations();
+});
+
+conjVerbsEl.addEventListener("click", e => {
+  const rmTense = e.target.closest(".remove-tense");
+  if (rmTense) { removeTense(rmTense.dataset.tense); return; }
+  const rmVerb = e.target.closest(".remove-verb");
+  if (rmVerb) removeVerb(rmVerb.dataset.verb);
+});
+
+function removeTense(id) {
+  const t = findTense(id);
+  if (!t) return;
+  const prefix = id + ":";
+  const hasData = t.fr || t.en || conj.verbs.some(v =>
+    Object.entries(v.cells).some(([k, c]) => k.startsWith(prefix) && (c.fr || c.en))
+  );
+  const name = t[conj.lang] || t.fr || t.en;
+  if (hasData && !confirm(
+    `Remove the column ${name ? "“" + name + "”" : ""} from every verb? All entries in it will be deleted.`
+  )) return;
+
+  conj.tenses = conj.tenses.filter(x => x.id !== id);
+  conj.verbs.forEach(v => {
+    Object.keys(v.cells).forEach(k => { if (k.startsWith(prefix)) delete v.cells[k]; });
+  });
+  saveConjugations();
+  renderConjugations();
+}
+
+function removeVerb(id) {
+  const v = findVerb(id);
+  if (!v) return;
+  const hasData = v.fr || v.en || Object.values(v.cells).some(c => c.fr || c.en);
+  const name = v[conj.lang] || v.fr || v.en;
+  if (hasData && !confirm(`Delete the verb ${name ? "“" + name + "”" : ""} and its table?`)) return;
+  conj.verbs = conj.verbs.filter(x => x.id !== id);
+  saveConjugations();
+  renderConjugations();
+}
+
+// ---- Keyboard: Enter moves down a column, Shift+Enter moves up ----
+conjVerbsEl.addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
+  const el = e.target;
+  const block = el.closest(".verb-block");
+  if (!block) return;
+
+  if (el.classList.contains("cell-input")) {
+    e.preventDefault();
+    let r = +el.dataset.row + (e.shiftKey ? -1 : 1);
+    let c = +el.dataset.col;
+    if (r >= PRONOUNS.length) { r = 0; c++; }
+    else if (r < 0) { r = PRONOUNS.length - 1; c--; }
+    const next = block.querySelector(`.cell-input[data-row="${r}"][data-col="${c}"]`);
+    next ? next.focus() : el.blur();
+
+  } else if (el.classList.contains("tense-input")) {
+    e.preventDefault();
+    const col = [...block.querySelectorAll(".tense-input")].indexOf(el);
+    const next = block.querySelector(`.cell-input[data-row="0"][data-col="${col}"]`);
+    if (next) next.focus();
+
+  } else if (el.classList.contains("verb-name-input")) {
+    e.preventDefault();
+    const next = block.querySelector(".cell-input");
+    if (next) next.focus();
+  }
+});
+
 // ============ INIT ============
 loadSets();
 renderSetSelectList();
+loadConjugations();
 </script>
 </body>
 </html>
